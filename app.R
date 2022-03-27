@@ -2,6 +2,7 @@ library(shiny)
 library(shinyBS)
 library(shinyjs)
 library(shinyFeedback)
+library(waiter)
 library(tidyverse)
 
 #-------------------------------------------------- User Data/Info UI
@@ -96,9 +97,11 @@ TestUI <- tabPanel(
 
 #-------------------------------------------------- Main UI
 ui <- fluidPage(
+  use_waitress(),
   sidebarLayout(
     UserDataUI,
     mainPanel(
+      use_waiter(),
       tabsetPanel(
         TestUI
       ),
@@ -138,6 +141,15 @@ server <- function(input, output, session) {
   
   #------------- Deals with Conducting Test
   observeEvent(input$start, {
+    waiter <- Waiter$new(
+      html = tagList(
+        spin_fading_circles(),
+        "First One is a Trial..."
+      )
+    )
+    waiter$show()
+    on.exit(waiter$hide())
+    Sys.sleep(3)
     active(1)
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
   })
@@ -154,11 +166,14 @@ server <- function(input, output, session) {
   observe({
     invalidateLater(1000, session)
     isolate({
+      waitress <- Waitress$new(max = no_of_digs(), theme = "line")
       if (active() <= no_of_digs()) {
         disp_dig(dig_seq()[active()])
         active(active() + 1)
         disable_DigitPad()
+        waitress$set(active()-1)
       } else {
+        waitress$close()
         enable_DigitPad()
       }
     })
