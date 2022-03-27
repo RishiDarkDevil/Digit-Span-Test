@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyBS)
+library(shinyjs)
 library(shinyFeedback)
 library(tidyverse)
 
@@ -33,6 +34,8 @@ UserDataUI <- sidebarPanel(
   
 )
 
+
+#------------------------------ Digit Pad UI
 DigitPadUI <- fluidPage(
   fluidRow(
     column(12, align = "center",
@@ -57,6 +60,23 @@ DigitPadUI <- fluidPage(
   ),
 )
 
+#--------------------------- Digit Pad Disable
+disable_DigitPad <- function() {
+  disable("1");disable("2");disable("3");disable("4");disable("5");disable("6");disable("7");disable("8");disable("9");
+  updateActionButton(inputId = "1", label = "?");updateActionButton(inputId = "2", label = "?");updateActionButton(inputId = "3", label = "?");
+  updateActionButton(inputId = "4", label = "?");updateActionButton(inputId = "5", label = "?");updateActionButton(inputId = "6", label = "?");
+  updateActionButton(inputId = "7", label = "?");updateActionButton(inputId = "8", label = "?");updateActionButton(inputId = "9", label = "?")
+}
+
+#--------------------------- Digit Pad Enable
+enable_DigitPad <- function() {
+  enable("1");enable("2");enable("3");enable("4");enable("5");enable("6");enable("7");enable("8");enable("9");
+  updateActionButton(inputId = "1", label = "1");updateActionButton(inputId = "2", label = "2");updateActionButton(inputId = "3", label = "3");
+  updateActionButton(inputId = "4", label = "4");updateActionButton(inputId = "5", label = "5");updateActionButton(inputId = "6", label = "6");
+  updateActionButton(inputId = "7", label = "7");updateActionButton(inputId = "8", label = "8");updateActionButton(inputId = "9", label = "9");
+}
+
+# ------------------------- Test UI
 TestUI <- tabPanel(
   "DIGIT SPAN TEST",
   splitLayout(
@@ -80,6 +100,8 @@ ui <- fluidPage(
 
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
+  
+  #------------- Deals with User Info
   user_info <- eventReactive(input$start, {
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
@@ -105,6 +127,7 @@ server <- function(input, output, session) {
   output$user_info_table <- renderTable(user_info())
   
   
+  #------------- Deals with Conducting Test
   observeEvent(input$start, {
     active(1)
     dig_seq(sample(1:10, 10, replace = FALSE))
@@ -124,6 +147,9 @@ server <- function(input, output, session) {
       if (active() <= 10) {
         disp_dig(dig_seq()[active()])
         active(active() + 1)
+        disable_DigitPad()
+      } else {
+        enable_DigitPad()
       }
     })
   })
