@@ -4,49 +4,75 @@ library(shinyFeedback)
 library(tidyverse)
 
 #-------------------------------------------------- User Data/Info UI
-UserDataUI <- fluidPage(
+UserDataUI <- sidebarPanel(
   titlePanel("YOUR INFO", "Digit Span Test"),
+  
+  useShinyFeedback(),
+  numericInput("age", "Enter your Age", value = 19, min = 5, max = 100),
+  
+  radioButtons("sex", "Gender", choiceNames = c("Male", "Female", "Prefer not to say"), choiceValues = c(0, 1, 2)),
+  
+  selectInput("educat", "Education Qualification", choices = educat_choices),
+  bsTooltip("educat", "Select the last completed one"),
+  
+  selectInput("job", "Current Profession", choices = job_choices, selected = NULL),
+  bsTooltip("job", "Select Academia if you are Student/Professor/Teacher"),
+  
+  radioButtons("maths", "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
+  bsTooltip("maths", "Select yes, if your work or study heavily uses Mathematics"),
+  
+  radioButtons("music", "Do you regularly play any Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
+  
+  selectInput("env", "Current Environment", choices = env_choices),
+  bsTooltip("env", "Right now, what environment are you in?"),
+  
   fluidRow(
-    useShinyFeedback(),
-    numericInput("age", "Enter your Age", value = 19, min = 5, max = 100)
-  ),
-  fluidRow(
-    radioButtons("sex", "Gender", choiceNames = c("Male", "Female", "Prefer not to say"), choiceValues = c(0, 1, 2)),
-  ),
-  fluidRow(
-    selectInput("educat", "Education Qualification", choices = educat_choices),
-    bsTooltip("educat", "Select the last completed one")
-  ),
-  fluidRow(
-    selectInput("job", "Current Profession", choices = job_choices, selected = NULL),
-    bsTooltip("job", "Select Academia if you are Student/Professor/Teacher")
-  ),
-  fluidRow(
-    radioButtons("maths", "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
-    bsTooltip("maths", "Select yes, if your work or study heavily uses Mathematics")
-  ),
-  fluidRow(
-    radioButtons("music", "Do you regularly play any Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0))
-  ),
-  fluidRow(
-    selectInput("env", "Current Environment", choices = env_choices),
-    bsTooltip("env", "Right now, what environment are you in?")
-  ),
-  fluidRow(
-    column(1, actionButton("start", "START")),
-    column(1, textOutput("start_ok"))
+    column(1, actionButton("start", "TAKE TEST")),
+    column(1, span(textOutput("start_ok"), style = "color:#2383cc"), offset = 4)
   )
   
+)
+
+DigitPadUI <- fluidPage(
+  fluidRow(
+    column(12, align = "center",
+      actionButton("1", "1", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("2", "2", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("3", "3", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+    )
+  ),
+  fluidRow(
+    column(12, align = "center",
+      actionButton("4", "4", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("5", "5", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("6", "6", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+    )
+  ),
+  fluidRow(
+    column(12, align = "center",
+      actionButton("7", "7", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("8", "8", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("9", "9", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+    )
+  ),
+)
+
+TestUI <- tabPanel(
+  "DIGIT SPAN TEST",
+  splitLayout(
+    span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle"),
+    DigitPadUI
+  )
 )
 
 #-------------------------------------------------- Main UI
 ui <- fluidPage(
   sidebarLayout(
-    sidebarPanel(
-      UserDataUI
-    ),
+    UserDataUI,
     mainPanel(
-      
+      tabsetPanel(
+        TestUI
+      ),
     ),
   ),
   tableOutput("user_info_table")
@@ -77,6 +103,31 @@ server <- function(input, output, session) {
   })
   
   output$user_info_table <- renderTable(user_info())
+  
+  
+  observeEvent(input$start, {
+    active(1)
+    dig_seq(sample(1:10, 10, replace = FALSE))
+  })
+  
+  disp_dig <- reactiveVal(0)
+  active <- reactiveVal(11)
+  dig_seq <- reactiveVal(sample(1:10, 10, replace = FALSE))
+  
+  output$display_digit <- renderText({
+    disp_dig()
+  })
+  
+  observe({
+    invalidateLater(1000, session)
+    isolate({
+      if (active() <= 10) {
+        disp_dig(dig_seq()[active()])
+        active(active() + 1)
+      }
+    })
+  })
 }
 
 shinyApp(ui, server)
+
