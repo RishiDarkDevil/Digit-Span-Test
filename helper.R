@@ -1,5 +1,5 @@
-educat_choices <- c(0, 1, 2, 3)
-educat_choices <- setNames(educat_choices, c("12th Grade", "Bachelors", "Masters", "PhD"))
+educat_choices <- c(0, 1, 2, 3, 4)
+educat_choices <- setNames(educat_choices, c("Still in school, below 12th Grade", "12th Grade", "Bachelors", "Masters", "PhD"))
 educat_choices
 
 job_choices <- c(0, 1, 2, 3)

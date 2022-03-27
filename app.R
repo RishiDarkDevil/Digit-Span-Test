@@ -13,14 +13,13 @@ UserDataUI <- function(id) {
     useShinyFeedback(),
     selectInput(NS(id, "educat"), "Education Qualification", choices = educat_choices),
     
-    useShinyFeedback(),
     selectInput(NS(id, "job"), "Current Profession", choices = job_choices),
     
     useShinyFeedback(),
     radioButtons(NS(id, "maths"), "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
     
     useShinyFeedback(),
-    radioButtons(NS(id, "music"), "Do you play Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
+    radioButtons(NS(id, "music"), "Do you regularly play any Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
     
     useShinyFeedback(),
     selectInput(NS(id, "env"), "Current Environment", choices = env_choices)
@@ -31,11 +30,40 @@ UserDataServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     reactive({
       
-      feedbackDanger("age", !is.integer(input$age), "Age cannot be fraction!")
-      #feedbackDanger("age", (input$age < 0), "Age cannot be negative!")
-      #feedbackWarning("age", (input$age > 100), "May you live for 100 more years!")
+      # Age Feedback
+      feedbackDanger("age",
+        ((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100),
+        ifelse(
+          !is.integer(input$age), "Age cannot be fraction!",
+          ifelse(
+            (input$age < 0), "Age cannot be negative!", "May you live for 100 more years! But we don't allow age more than 100"
+          )
+        )
+      )
       
-      #feedback()
+      # Education Feedback
+      feedback("educat",
+        TRUE,
+        "Select your last completed one"
+      )
+      
+      # Maths Feedback
+      feedback("maths",
+               TRUE,
+               "Select yes if your work or study involves Mathematics heavily"
+      )
+      
+      # Music Feedback
+      feedback("music",
+               TRUE,
+               "Select yes if you regularly play a musical instrument"
+      )
+      
+      # Env Feedback
+      feedback("env",
+               TRUE,
+               "Select the one relevant to the situation you are at right now"
+      )
       
       tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, maths = input$maths, music = input$music, env = input$env)
       
