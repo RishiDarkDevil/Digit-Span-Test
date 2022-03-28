@@ -180,12 +180,16 @@ server <- function(input, output, session) {
   
   #------------- Deals with Conducting Test
   
-  disp_dig <- reactiveVal(-1)
-  active <- reactiveVal(3)
-  dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE))
-  no_of_digs <- reactiveVal(2)
-  traverse <- reactiveVal(1)
-  wrong_times <- reactiveVal(0)
+  disp_dig <- reactiveVal(-1) # digit to be displayed
+  active <- reactiveVal(3) # Random Number displayer iterator
+  dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE)) # the number to be guessed
+  no_of_digs <- reactiveVal(2) # no of digits in the deg seq
+  traverse <- reactiveVal(1) # traverse the deg seq to match with the user input if correct or not
+  wrong_times <- reactiveVal(0) # No of wrong button clicks
+  last_try <- reactiveVal(TRUE) # Last try correct or wrong
+  
+  #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
+  #last_hit_index <- reactiveVal(-1) # Stores the index in the deg seq where wrong button was clicked
   
   output$display_digit <- renderText({
     disp_dig()
@@ -216,7 +220,10 @@ server <- function(input, output, session) {
   
   #--- Heading towards next test
   observeEvent(input$next_correct, {
-    no_of_digs(no_of_digs() + 1)
+    if (last_try()) {
+      no_of_digs(no_of_digs() + 1)
+    }
+    last_try(TRUE)
     disp_dig(-1)
     active(1)
     traverse(1)
@@ -235,20 +242,24 @@ server <- function(input, output, session) {
     message(dig_seq())
     observe({
       isolate({
-        if (traverse() <= no_of_digs()) {
-          if((dig_seq()[traverse()] == val)){
-            traverse(traverse()+1)
-            correct_input(id)
-            message("correct")
-          } else {
-            message("wrong")
-            if (wrong_times() < 2) {
-              wrong_input(id)
+        if (last_try()) {
+          if (traverse() <= no_of_digs()) {
+            if((dig_seq()[traverse()] == val)){
+              traverse(traverse()+1)
+              last_try(TRUE)
+              correct_input(id)
+              message("correct")
             } else {
-              wrong_input(id, FALSE)
+              message("wrong")
+              traverse(traverse()+1)
+              last_try(FALSE)
+              wrong_times(wrong_times() + 1)
+              if (wrong_times() <= 2) {
+                wrong_input(id)
+              } else {
+                wrong_input(id, FALSE)
+              }
             }
-            wrong_times(wrong_times() + 1)
-            traverse(1)
           }
         }
       })
