@@ -6,6 +6,18 @@ library(waiter)
 library(tidyverse)
 
 #-------------------------------------------------- User Data/Info UI
+educat_choices <- c(0, 1, 2, 3, 4)
+educat_choices <- setNames(educat_choices, c("Still in school, below 12th Grade", "12th Grade", "Bachelors", "Masters", "PhD"))
+educat_choices
+
+job_choices <- c(0, 1, 2, 3)
+job_choices <- setNames(job_choices, c("Academia", "Industry", "Business", "Not working yet"))
+job_choices
+
+env_choices <- c(0, 1, 2, 3)
+env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
+env_choices
+
 UserDataUI <- sidebarPanel(
   titlePanel("YOUR INFO", "Digit Span Test"),
   
@@ -40,29 +52,29 @@ UserDataUI <- sidebarPanel(
 DigitPadUI <- fluidPage(
   fluidRow(
     column(12, align = "center",
-      actionButton("1", "1", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("2", "2", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("3", "3", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+      actionButton("one", "1", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("two", "2", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("three", "3", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-      actionButton("4", "4", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("5", "5", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("6", "6", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+      actionButton("four", "4", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("five", "5", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("six", "6", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-      actionButton("7", "7", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("8", "8", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-      actionButton("9", "9", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+      actionButton("seven", "7", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("eight", "8", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+      actionButton("nine", "9", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
            actionButton("backspace", "", icon = icon("backspace"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("0", "0", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+           actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
            actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
     )
   )
@@ -70,22 +82,32 @@ DigitPadUI <- fluidPage(
 
 #--------------------------- Digit Pad Disable
 disable_DigitPad <- function() {
-  disable("1");disable("2");disable("3");disable("4");disable("5");disable("6");disable("7");disable("8");disable("9");disable("0");disable("backspace");disable("next_correct")
-  updateActionButton(inputId = "1", label = "?");updateActionButton(inputId = "2", label = "?");updateActionButton(inputId = "3", label = "?");
-  updateActionButton(inputId = "4", label = "?");updateActionButton(inputId = "5", label = "?");updateActionButton(inputId = "6", label = "?");
-  updateActionButton(inputId = "7", label = "?");updateActionButton(inputId = "8", label = "?");updateActionButton(inputId = "9", label = "?");
-  updateActionButton(inputId = "0", label = "?");updateActionButton(inputId = "backspace", icon = icon("question"));updateActionButton(inputId = "next_correct", icon = icon("question"))
+  disable("one");disable("two");disable("three");disable("four");disable("five");disable("six");disable("seven");disable("eight");disable("nine");disable("zero");disable("backspace");disable("next_correct")
+  updateActionButton(inputId = "one", label = "?");updateActionButton(inputId = "two", label = "?");updateActionButton(inputId = "three", label = "?");
+  updateActionButton(inputId = "four", label = "?");updateActionButton(inputId = "five", label = "?");updateActionButton(inputId = "six", label = "?");
+  updateActionButton(inputId = "seven", label = "?");updateActionButton(inputId = "eight", label = "?");updateActionButton(inputId = "nine", label = "?");
+  updateActionButton(inputId = "zero", label = "?");updateActionButton(inputId = "backspace", icon = icon("question"));updateActionButton(inputId = "next_correct", icon = icon("question"))
 }
 
 #--------------------------- Digit Pad Enable
 enable_DigitPad <- function() {
-  enable("1");enable("2");enable("3");enable("4");enable("5");enable("6");enable("7");enable("8");enable("9");enable("0");enable("backspace");enable("next_correct")
-  updateActionButton(inputId = "1", label = "1");updateActionButton(inputId = "2", label = "2");updateActionButton(inputId = "3", label = "3");
-  updateActionButton(inputId = "4", label = "4");updateActionButton(inputId = "5", label = "5");updateActionButton(inputId = "6", label = "6");
-  updateActionButton(inputId = "7", label = "7");updateActionButton(inputId = "8", label = "8");updateActionButton(inputId = "9", label = "9");
-  updateActionButton(inputId = "0", label = "0");updateActionButton(inputId = "backspace", label = "", icon = icon("backspace"));updateActionButton(inputId = "next_correct", label = "", icon = icon("arrow-right"));
+  enable("one");enable("two");enable("three");enable("four");enable("five");enable("six");enable("seven");enable("eight");enable("nine");enable("zero");enable("backspace");enable("next_correct")
+  updateActionButton(inputId = "one", label = "1");updateActionButton(inputId = "two", label = "2");updateActionButton(inputId = "three", label = "3");
+  updateActionButton(inputId = "four", label = "4");updateActionButton(inputId = "five", label = "5");updateActionButton(inputId = "six", label = "6");
+  updateActionButton(inputId = "seven", label = "7");updateActionButton(inputId = "eight", label = "8");updateActionButton(inputId = "nine", label = "9");
+  updateActionButton(inputId = "zero", label = "0");updateActionButton(inputId = "backspace", label = "", icon = icon("backspace"));updateActionButton(inputId = "next_correct", label = "", icon = icon("arrow-right"));
 }
 
+wrong_input <- function(id, retry = TRUE) {
+  updateActionButton(inputId = id, label = "X")
+  if (retry) {
+    updateActionButton(inputId = "next_correct", icon = icon("redo"))
+  }
+}
+
+correct_input <- function(id) {
+  updateActionButton(inputId = id, label = "O")
+}
 # ------------------------- Test UI
 TestUI <- tabPanel(
   "DIGIT SPAN TEST",
@@ -133,14 +155,8 @@ server <- function(input, output, session) {
     }
     output$start_ok <- renderText("Successfully Recorded.")
     
-    tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, maths = input$maths, music = input$music, env = input$env)
-  })
-  
-  output$user_info_table <- renderTable(user_info())
-  
-  
-  #------------- Deals with Conducting Test
-  observeEvent(input$start, {
+    Sys.sleep(0.5)
+    
     waiter <- Waiter$new(
       html = tagList(
         spin_fading_circles(),
@@ -149,20 +165,33 @@ server <- function(input, output, session) {
     )
     waiter$show()
     on.exit(waiter$hide())
+    
     Sys.sleep(3)
+    
     active(1)
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
+    message(dig_seq())
+    
+    tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, maths = input$maths, music = input$music, env = input$env)
   })
   
+  output$user_info_table <- renderTable(user_info())
+  
+  
+  #------------- Deals with Conducting Test
+  
   disp_dig <- reactiveVal(-1)
-  active <- reactiveVal(11)
+  active <- reactiveVal(3)
   dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE))
   no_of_digs <- reactiveVal(2)
+  traverse <- reactiveVal(1)
+  wrong_times <- reactiveVal(0)
   
   output$display_digit <- renderText({
     disp_dig()
   })
   
+  #---------- Displaying Random Numbers and Diabling and enabling DigitPad
   observe({
     invalidateLater(1000, session)
     isolate({
@@ -174,16 +203,87 @@ server <- function(input, output, session) {
         waitress$set(active()-1)
       } else {
         waitress$close()
-        enable_DigitPad()
+        
       }
     })
   })
   
+  observe({
+      if ((active()-1) == no_of_digs()) {
+        enable_DigitPad()
+      }
+  })
+  
+  #--- Heading towards next test
   observeEvent(input$next_correct, {
     no_of_digs(no_of_digs() + 1)
     disp_dig(-1)
     active(1)
-    dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
+    traverse(1)
+    if (no_of_digs() <= 10) {
+      dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
+    } else {
+      dig_seq(sample(0:9, no_of_digs(), replace = TRUE))
+    }
+    
+    message(dig_seq())
+  })
+  
+  #--- Handling User DigitPad Input after showing a Number
+  check_dig_inp <- function(id, val) {
+    message("----")
+    message(dig_seq())
+    observe({
+      isolate({
+        if (traverse() <= no_of_digs()) {
+          if((dig_seq()[traverse()] == val)){
+            traverse(traverse()+1)
+            correct_input(id)
+            message("correct")
+          } else {
+            message("wrong")
+            if (wrong_times() < 2) {
+              wrong_input(id)
+            } else {
+              wrong_input(id, FALSE)
+            }
+            wrong_times(wrong_times() + 1)
+            traverse(1)
+          }
+        }
+      })
+    })
+  }
+  
+  observeEvent(input$one, {
+    check_dig_inp("one", 1)
+  })
+  observeEvent(input$two, {
+    check_dig_inp("two", 2)
+  })
+  observeEvent(input$three, {
+    check_dig_inp("three", 3)
+  })
+  observeEvent(input$four, {
+    check_dig_inp("four", 4)
+  })
+  observeEvent(input$five, {
+    check_dig_inp("five", 5)
+  })
+  observeEvent(input$six, {
+    check_dig_inp("six", 6)
+  })
+  observeEvent(input$seven, {
+    check_dig_inp("seven", 7)
+  })
+  observeEvent(input$eight, {
+    check_dig_inp("eight", 8)
+  })
+  observeEvent(input$nine, {
+    check_dig_inp("nine", 9)
+  })
+  observeEvent(input$zero, {
+    check_dig_inp("zero", 0)
   })
 }
 
