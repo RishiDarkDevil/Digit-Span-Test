@@ -188,7 +188,7 @@ server <- function(input, output, session) {
   no_of_digs <- reactiveVal(2) # no of digits in the deg seq
   traverse <- reactiveVal(1) # traverse the deg seq to match with the user input if correct or not
   wrong_times <- reactiveVal(0) # No of wrong button clicks -- We will allow upto 3 mistakes
-  restart_times <- reactiveVal(0) # No of times restart button is clicked
+  restart_times <- reactiveVal(0) # No of times restart button is clicked - Each round will allow 2 restarts
   last_try <- reactiveVal(TRUE) # Last try correct or wrong
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
@@ -246,12 +246,16 @@ server <- function(input, output, session) {
   observeEvent(input$next_correct, {
     if ((traverse()-1) == no_of_digs()) {
       next_round()
+      restart_times(0)
     }
   })
   
   #--- Restarting 
   observeEvent(input$restart, {
-    next_round(TRUE)
+    if (restart_times() <= 1) {
+      next_round(TRUE)
+      restart_times(restart_times()+1)
+    }
   })
   
   #--- Handling User DigitPad Input after showing a Number
@@ -260,7 +264,7 @@ server <- function(input, output, session) {
     message(dig_seq())
     observe({
       isolate({
-        if (last_try()) {
+        if (last_try() & (disp_dig() == "GUESS")) {
           if (traverse() <= no_of_digs()) {
             if((dig_seq()[traverse()] == val)){
               traverse(traverse()+1)
