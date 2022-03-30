@@ -5,6 +5,30 @@ library(shinyFeedback)
 library(waiter)
 library(tidyverse)
 
+#----------------------------------------------------- Helpers
+
+timer <- function(){
+  x <- Sys.time()
+  y <- function(){
+    y <- x
+    x <<- Sys.time()
+    return(x-y)
+  }
+  return(y)
+}
+
+
+user_dig_seq <- tibble( # To store digit sequence
+  try = c(1, 2, 3)
+)
+user_dig_seq[,paste0("r",1:100)] = ""
+
+user_restart_wrong_data <- tibble(
+  variable = c("n_restarts", "n_wrongs")
+)
+user_restart_wrong_data[,paste0("r",1:100)] = 0
+
+
 #-------------------------------------------------- User Data/Info UI
 educat_choices <- c(0, 1, 2, 3, 4)
 educat_choices <- setNames(educat_choices, c("Still in school, below 12th Grade", "12th Grade", "Bachelors", "Masters", "PhD"))
@@ -17,11 +41,6 @@ job_choices
 env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
 env_choices
-
-user_dig_seq <- tibble(
-  try = c(1, 2, 3)
-)
-user_dig_seq[,paste0("r",1:100)] = ""
 
 UserDataUI <- sidebarPanel(
   titlePanel("YOUR INFO", "Digit Span Test"),
@@ -204,6 +223,8 @@ server <- function(input, output, session) {
   restart_times <- reactiveVal(0) # No of times restart button is clicked - Each round will allow 2 restarts
   last_try <- reactiveVal(TRUE) # Last try correct or wrong
   user_dig_seq <- reactiveVal(user_dig_seq) # Store digit sequence displayed
+  user_restart_wrong <- reactiveVal(user_restart_wrong_data) # Store the number of times reset and wrong was clicked in each round
+  click <- timer()
   #round_num <- reactiveVal(1) # Round Number
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
@@ -238,7 +259,10 @@ server <- function(input, output, session) {
       }
   })
   
-  #--- Heading towards next test
+  
+  # ---------------------- Capture Data 
+  
+  # ---- Captures digit sequence
   write_dig_seq <- function(seq_dig) { # Write a digit sequence passed as arg to the current position in the user_dig_seq table
     user_dig_seq_temp <- user_dig_seq()
     message("****")
@@ -250,10 +274,26 @@ server <- function(input, output, session) {
     print(user_dig_seq())
   }
   
+  # ---- Captures restart times
+  write_restart <- function(times_restart) {
+    temp <- user_restart_wrong()
+    temp[1, (no_of_digs()-1)] <- times_restart
+    user_restart_wrong(temp)
+    print(user_restart_wrong())
+  }
+  
+  write_wrong <- function(times_wrong) {
+    temp <- user_restart_wrong()
+    temp[2, 2:ncol(temp)] <- as.list(colSums(user_dig_seq()[,2:ncol(temp)] > 0))
+    user_restart_wrong(temp)
+  }
+  
+  #--- Heading towards next test
   next_round <- function(restart = FALSE) {
     if (wrong_times() <= 2) {
       if (!restart & (no_of_digs() > 2) & last_try()) {
         write_dig_seq(dig_seq())
+        #write_restart(restart_times())
       }
       if (last_try() & (!restart)) {
         no_of_digs(no_of_digs() + 1)
@@ -274,7 +314,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$next_correct, {
-    if (((traverse()-1) == no_of_digs()) | (!last_try())) {
+    if ((((traverse()-1) == no_of_digs()) | (!last_try())) & (wrong_times() <= 2)) {
       next_round()
       restart_times(0)
     }
@@ -288,6 +328,7 @@ server <- function(input, output, session) {
     if (restart_times() <= 1 & disp_dig() == "GUESS" & last_try() & (traverse() == 1)) {
       next_round(TRUE)
       restart_times(restart_times()+1)
+      write_restart(restart_times())
     }
   })
   
@@ -312,7 +353,10 @@ server <- function(input, output, session) {
               message("correct")
             } else {
               message("wrong")
-              write_dig_seq(dig_seq())
+              if (no_of_digs() > 2) {
+                write_dig_seq(dig_seq())
+                write_wrong()
+              }
               waitress$set(0)
               waitress$close()
               traverse(traverse()+1)
@@ -323,6 +367,7 @@ server <- function(input, output, session) {
               } else {
                 wrong_input(id, FALSE)
                 write_csv(user_dig_seq(), "user_dig_seq.csv", append = TRUE)
+                write_csv(user_restart_wrong(), "user_restart_wrong.csv", append = TRUE)
               }
             }
           }
