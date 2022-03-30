@@ -18,6 +18,17 @@ env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
 env_choices
 
+user_data <- tibble(
+  age = NA,
+  sex = NA,
+  educat = NA,
+  job = NA,
+  academic = NA,
+  maths = NA,
+  music = NA,
+  env = NA
+)
+
 UserDataUI <- sidebarPanel(
   titlePanel("YOUR INFO", "Digit Span Test"),
   
@@ -31,6 +42,9 @@ UserDataUI <- sidebarPanel(
   
   selectInput("job", "Current Profession", choices = job_choices, selected = NULL),
   bsTooltip("job", "Select Academia if you are Student/Professor/Teacher"),
+  
+  sliderInput("academic", "Your Academic Performance", value = 3, min = 1, max = 5),
+  bsTooltip("academic", "1 indicating bad and 5 indicating excellent"),
   
   radioButtons("maths", "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
   bsTooltip("maths", "Select yes, if your work or study heavily uses Mathematics"),
@@ -130,15 +144,14 @@ ui <- fluidPage(
         TestUI
       ),
     ),
-  ),
-  tableOutput("user_info_table")
+  )
 )
 
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
   
   #------------- Deals with User Info
-  user_info <- eventReactive(input$start, {
+  observeEvent(input$start, {
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
       
@@ -174,11 +187,13 @@ server <- function(input, output, session) {
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
     message(dig_seq())
     
-    tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, maths = input$maths, music = input$music, env = input$env)
+    write_csv(
+      tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env),
+      "user_data.csv",
+      append = TRUE
+    )
   })
-  
-  output$user_info_table <- renderTable(user_info())
-  
+
   
   #------------- Deals with Conducting Test
   
