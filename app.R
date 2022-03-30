@@ -18,16 +18,10 @@ env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
 env_choices
 
-user_data <- tibble(
-  age = NA,
-  sex = NA,
-  educat = NA,
-  job = NA,
-  academic = NA,
-  maths = NA,
-  music = NA,
-  env = NA
+user_dig_seq <- tibble(
+  try = c(1, 2, 3)
 )
+user_dig_seq[,paste0("r",1:100)] = ""
 
 UserDataUI <- sidebarPanel(
   titlePanel("YOUR INFO", "Digit Span Test"),
@@ -113,7 +107,8 @@ enable_DigitPad <- function() {
 }
 
 wrong_input <- function(id, retry = TRUE) {
-  updateActionButton(inputId = id, label = "X")
+  # updateActionButton(inputId = id, label = "X")
+  updateActionButton(inputId = "restart", icon = icon("times"))
   if (retry) {
     updateActionButton(inputId = "next_correct", icon = icon("redo"))
   } else {
@@ -121,8 +116,9 @@ wrong_input <- function(id, retry = TRUE) {
   }
 }
 
-correct_input <- function(id) {
-  updateActionButton(inputId = id, label = "O")
+all_correct <- function() {
+  # updateActionButton(inputId = id, label = "O")
+  updateActionButton(inputId = "restart", icon = icon("check"))
 }
 # ------------------------- Test UI
 TestUI <- tabPanel(
@@ -185,10 +181,12 @@ server <- function(input, output, session) {
     
     active(1)
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
+    #all_dig_seq()[round_num()] <- dig_seq()
     message(dig_seq())
     
+    curr_user_data <- tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env)
     write_csv(
-      tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env),
+      curr_user_data,
       "user_data.csv",
       append = TRUE
     )
@@ -205,6 +203,8 @@ server <- function(input, output, session) {
   wrong_times <- reactiveVal(0) # No of wrong button clicks -- We will allow upto 3 mistakes
   restart_times <- reactiveVal(0) # No of times restart button is clicked - Each round will allow 2 restarts
   last_try <- reactiveVal(TRUE) # Last try correct or wrong
+  user_dig_seq <- reactiveVal(user_dig_seq) # Store digit sequence displayed
+  #round_num <- reactiveVal(1) # Round Number
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
   #last_hit_index <- reactiveVal(-1) # Stores the index in the deg seq where wrong button was clicked
@@ -239,13 +239,28 @@ server <- function(input, output, session) {
   })
   
   #--- Heading towards next test
+  write_dig_seq <- function(seq_dig) { # Write a digit sequence passed as arg to the current position in the user_dig_seq table
+    user_dig_seq_temp <- user_dig_seq()
+    message("****")
+    message(seq_dig)
+    message(restart_times()+1)
+    message(no_of_digs()-1)
+    user_dig_seq_temp[(wrong_times()+1), (no_of_digs()-1)] <- paste(seq_dig, collapse = "")
+    user_dig_seq(user_dig_seq_temp)
+    print(user_dig_seq())
+  }
+  
   next_round <- function(restart = FALSE) {
     if (wrong_times() <= 2) {
+      if (!restart & (no_of_digs() > 2) & last_try()) {
+        write_dig_seq(dig_seq())
+      }
       if (last_try() & (!restart)) {
         no_of_digs(no_of_digs() + 1)
+        wrong_times(0)
       }
       last_try(TRUE)
-      disp_dig("GO")
+      # disp_dig("GO")
       active(1)
       traverse(1)
       if (no_of_digs() <= 10) {
@@ -259,7 +274,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$next_correct, {
-    if ((traverse()-1) == no_of_digs()) {
+    if (((traverse()-1) == no_of_digs()) | (!last_try())) {
       next_round()
       restart_times(0)
     }
@@ -267,7 +282,10 @@ server <- function(input, output, session) {
   
   #--- Restarting 
   observeEvent(input$restart, {
-    if (restart_times() <= 1) {
+    # Restart Rules - Can restart 2 times in a round, Can restart only when all the numbers are displayed for a particular round
+    # Can restart only if the user hasn't tried i.e. one cannot restart if he made a wrong guess
+    # Restart is available only when the user hasn't tried anything
+    if (restart_times() <= 1 & disp_dig() == "GUESS" & last_try() & (traverse() == 1)) {
       next_round(TRUE)
       restart_times(restart_times()+1)
     }
@@ -279,15 +297,24 @@ server <- function(input, output, session) {
     message(dig_seq())
     observe({
       isolate({
+        waitress <- Waitress$new(selector = "#display_digit", theme = "overlay-opacity",min = 0, max = 100)
+        
         if (last_try() & (disp_dig() == "GUESS")) {
           if (traverse() <= no_of_digs()) {
             if((dig_seq()[traverse()] == val)){
               traverse(traverse()+1)
               last_try(TRUE)
-              correct_input(id)
+              waitress$inc((100 / (no_of_digs())))
+              if ((traverse()-1) == no_of_digs()) {
+                waitress$close()
+                all_correct()
+              }
               message("correct")
             } else {
               message("wrong")
+              write_dig_seq(dig_seq())
+              waitress$set(0)
+              waitress$close()
               traverse(traverse()+1)
               last_try(FALSE)
               wrong_times(wrong_times() + 1)
@@ -295,6 +322,7 @@ server <- function(input, output, session) {
                 wrong_input(id)
               } else {
                 wrong_input(id, FALSE)
+                write_csv(user_dig_seq(), "user_dig_seq.csv", append = TRUE)
               }
             }
           }
