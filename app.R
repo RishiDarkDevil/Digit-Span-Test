@@ -24,7 +24,7 @@ UserDataUI <- sidebarPanel(
   useShinyFeedback(),
   numericInput("age", "Enter your Age", value = 19, min = 5, max = 100),
   
-  radioButtons("sex", "Gender", choiceNames = c("Male", "Female", "Prefer not to say"), choiceValues = c(0, 1, 2)),
+  radioButtons("sex", "Gender", choiceNames = c("Male", "Female"), choiceValues = c(0, 1)),
   
   selectInput("educat", "Education Qualification", choices = educat_choices),
   bsTooltip("educat", "Select the last completed one"),
@@ -73,7 +73,7 @@ DigitPadUI <- fluidPage(
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("backspace", "", icon = icon("backspace"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
+           actionButton("restart", "", icon = icon("sync"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
            actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
            actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
     )
@@ -86,7 +86,7 @@ disable_DigitPad <- function() {
   updateActionButton(inputId = "one", label = "?");updateActionButton(inputId = "two", label = "?");updateActionButton(inputId = "three", label = "?");
   updateActionButton(inputId = "four", label = "?");updateActionButton(inputId = "five", label = "?");updateActionButton(inputId = "six", label = "?");
   updateActionButton(inputId = "seven", label = "?");updateActionButton(inputId = "eight", label = "?");updateActionButton(inputId = "nine", label = "?");
-  updateActionButton(inputId = "zero", label = "?");updateActionButton(inputId = "backspace", icon = icon("question"));updateActionButton(inputId = "next_correct", icon = icon("question"))
+  updateActionButton(inputId = "zero", label = "?");updateActionButton(inputId = "restart", icon = icon("question"));updateActionButton(inputId = "next_correct", icon = icon("question"))
 }
 
 #--------------------------- Digit Pad Enable
@@ -95,13 +95,15 @@ enable_DigitPad <- function() {
   updateActionButton(inputId = "one", label = "1");updateActionButton(inputId = "two", label = "2");updateActionButton(inputId = "three", label = "3");
   updateActionButton(inputId = "four", label = "4");updateActionButton(inputId = "five", label = "5");updateActionButton(inputId = "six", label = "6");
   updateActionButton(inputId = "seven", label = "7");updateActionButton(inputId = "eight", label = "8");updateActionButton(inputId = "nine", label = "9");
-  updateActionButton(inputId = "zero", label = "0");updateActionButton(inputId = "backspace", label = "", icon = icon("backspace"));updateActionButton(inputId = "next_correct", label = "", icon = icon("arrow-right"));
+  updateActionButton(inputId = "zero", label = "0");updateActionButton(inputId = "restart", label = "", icon = icon("sync"));updateActionButton(inputId = "next_correct", label = "", icon = icon("arrow-right"));
 }
 
 wrong_input <- function(id, retry = TRUE) {
   updateActionButton(inputId = id, label = "X")
   if (retry) {
     updateActionButton(inputId = "next_correct", icon = icon("redo"))
+  } else {
+    updateActionButton(inputId = "next_correct", icon = icon("flag-checkered"))
   }
 }
 
@@ -180,12 +182,13 @@ server <- function(input, output, session) {
   
   #------------- Deals with Conducting Test
   
-  disp_dig <- reactiveVal(-1) # digit to be displayed
-  active <- reactiveVal(3) # Random Number displayer iterator
+  disp_dig <- reactiveVal("GO") # digit to be displayed
+  active <- reactiveVal(4) # Random Number displayer iterator
   dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE)) # the number to be guessed
   no_of_digs <- reactiveVal(2) # no of digits in the deg seq
   traverse <- reactiveVal(1) # traverse the deg seq to match with the user input if correct or not
-  wrong_times <- reactiveVal(0) # No of wrong button clicks
+  wrong_times <- reactiveVal(0) # No of wrong button clicks -- We will allow upto 3 mistakes
+  restart_times <- reactiveVal(0) # No of times restart button is clicked
   last_try <- reactiveVal(TRUE) # Last try correct or wrong
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
@@ -207,33 +210,48 @@ server <- function(input, output, session) {
         waitress$set(active()-1)
       } else {
         waitress$close()
-        
+        if ((traverse() == 1) & ((active()-1) == no_of_digs())) {
+          disp_dig("GUESS")
+        }
       }
     })
   })
   
   observe({
-      if ((active()-1) == no_of_digs()) {
+      if (disp_dig() == "GUESS") {
         enable_DigitPad()
       }
   })
   
   #--- Heading towards next test
+  next_round <- function(restart = FALSE) {
+    if (wrong_times() <= 2) {
+      if (last_try() & (!restart)) {
+        no_of_digs(no_of_digs() + 1)
+      }
+      last_try(TRUE)
+      disp_dig("GO")
+      active(1)
+      traverse(1)
+      if (no_of_digs() <= 10) {
+        dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
+      } else {
+        dig_seq(sample(0:9, no_of_digs(), replace = TRUE))
+      }
+      
+      message(dig_seq())
+    }
+  }
+  
   observeEvent(input$next_correct, {
-    if (last_try()) {
-      no_of_digs(no_of_digs() + 1)
+    if ((traverse()-1) == no_of_digs()) {
+      next_round()
     }
-    last_try(TRUE)
-    disp_dig(-1)
-    active(1)
-    traverse(1)
-    if (no_of_digs() <= 10) {
-      dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
-    } else {
-      dig_seq(sample(0:9, no_of_digs(), replace = TRUE))
-    }
-    
-    message(dig_seq())
+  })
+  
+  #--- Restarting 
+  observeEvent(input$restart, {
+    next_round(TRUE)
   })
   
   #--- Handling User DigitPad Input after showing a Number
@@ -266,36 +284,16 @@ server <- function(input, output, session) {
     })
   }
   
-  observeEvent(input$one, {
-    check_dig_inp("one", 1)
-  })
-  observeEvent(input$two, {
-    check_dig_inp("two", 2)
-  })
-  observeEvent(input$three, {
-    check_dig_inp("three", 3)
-  })
-  observeEvent(input$four, {
-    check_dig_inp("four", 4)
-  })
-  observeEvent(input$five, {
-    check_dig_inp("five", 5)
-  })
-  observeEvent(input$six, {
-    check_dig_inp("six", 6)
-  })
-  observeEvent(input$seven, {
-    check_dig_inp("seven", 7)
-  })
-  observeEvent(input$eight, {
-    check_dig_inp("eight", 8)
-  })
-  observeEvent(input$nine, {
-    check_dig_inp("nine", 9)
-  })
-  observeEvent(input$zero, {
-    check_dig_inp("zero", 0)
-  })
+  observeEvent(input$one, check_dig_inp("one", 1))
+  observeEvent(input$two, check_dig_inp("two", 2))
+  observeEvent(input$three, check_dig_inp("three", 3))
+  observeEvent(input$four, check_dig_inp("four", 4))
+  observeEvent(input$five, check_dig_inp("five", 5))
+  observeEvent(input$six, check_dig_inp("six", 6))
+  observeEvent(input$seven, check_dig_inp("seven", 7))
+  observeEvent(input$eight, check_dig_inp("eight", 8))
+  observeEvent(input$nine, check_dig_inp("nine", 9))
+  observeEvent(input$zero, check_dig_inp("zero", 0))
 }
 
 shinyApp(ui, server)
