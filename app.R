@@ -4,19 +4,9 @@ library(shinyjs)
 library(shinyFeedback)
 library(waiter)
 library(tidyverse)
+library(lubridate)
 
 #----------------------------------------------------- Helpers
-
-timer <- function(){
-  x <- Sys.time()
-  y <- function(){
-    y <- x
-    x <<- Sys.time()
-    return(x-y)
-  }
-  return(y)
-}
-
 
 user_dig_seq <- tibble( # To store digit sequence
   try = c(1, 2, 3)
@@ -26,7 +16,7 @@ user_dig_seq[,paste0("r",1:100)] = ""
 user_restart_wrong_data <- tibble(
   variable = c("n_restarts", "n_wrongs")
 )
-user_restart_wrong_data[,paste0("r",1:100)] = 0
+user_restart_wrong_data[,paste0("r",1:100)] <- 0
 index_wrong <- rep(-1, 3*100) # index of each sequence starts from 1 assume
 
 
@@ -34,7 +24,8 @@ user_digit_click_time_data <- user_dig_seq %>%
   gather(colnames(user_dig_seq)[2:ncol(user_dig_seq)], key = "rounds", value = "dig_seq") %>%
   select(try, rounds)
 
-user_digit_click_time_data[,paste0("c",1:102)] = 0
+user_digit_click_time_data[,paste0("c",1:102)] <- 0 # Here the c1 indicates the time difference(in secs) between guessing time start and a digit input(wrong/correct)
+
 
 #-------------------------------------------------- User Data/Info UI
 educat_choices <- c(0, 1, 2, 3, 4)
@@ -239,7 +230,8 @@ server <- function(input, output, session) {
   last_try <- reactiveVal(TRUE) # Last try correct or wrong
   user_dig_seq <- reactiveVal(user_dig_seq) # Store digit sequence displayed
   user_restart_wrong <- reactiveVal(user_restart_wrong_data) # Store the number of times reset and wrong was clicked in each round
-  click <- timer()
+  user_digit_click_time <- reactiveVal(user_digit_click_time_data) # Stores the time between clicks of the digits
+  prev_hit_time <- reactiveVal(Sys.time()) # Stores absolute time of when the prev button was clicked
   #round_num <- reactiveVal(1) # Round Number
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
@@ -271,6 +263,7 @@ server <- function(input, output, session) {
   observe({
       if (disp_dig() == "GUESS") {
         enable_DigitPad()
+        prev_hit_time(Sys.time())
       }
   })
   
@@ -280,17 +273,11 @@ server <- function(input, output, session) {
   # ---- Captures digit sequence
   write_dig_seq <- function(seq_dig) { # Write a digit sequence passed as arg to the current position in the user_dig_seq table
     user_dig_seq_temp <- user_dig_seq()
-    message("****")
-    message(seq_dig)
     user_dig_seq_temp[(wrong_times()+1), (no_of_digs()-1)] <- paste(seq_dig, collapse = "")
     user_dig_seq(user_dig_seq_temp)
-    index_wrong[(((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1)] <<- traverse()
-    print((((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1))
-    print("^^")
-    print(index_wrong[(((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1)])
-    print("^^")
-    print(index_wrong[1:((((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1))])
-    print(user_dig_seq())
+    if (!last_try()) {
+      index_wrong[(((no_of_digs()-3)*3) + (wrong_times()+1))] <<- traverse()
+    }
   }
   
   # ---- Captures restart times
@@ -298,12 +285,16 @@ server <- function(input, output, session) {
     temp <- user_restart_wrong()
     temp[1, (no_of_digs()-1)] <- times_restart
     user_restart_wrong(temp)
-    print(user_restart_wrong())
   }
   
   write_wrong <- function(times_wrong) {
     temp <- user_restart_wrong()
     temp[2, 2:ncol(temp)] <- as.list(colSums(user_dig_seq()[,2:ncol(temp)] > 0))
+    for (i in 2:(no_of_digs()-2)) {
+      if ((temp[2,i] == 1) & (user_dig_seq()[2, i] == "") & (user_dig_seq()[2, i] == "")){ temp[2, i] = 0 }
+      if((temp[2,i] == 2) & (user_dig_seq()[3, i] == "")){ temp[2,i] = 1 }
+      if((temp[2,i] == 3) & (user_dig_seq()[1, i+1] != "")){ temp[2,i] = 2}  
+    }
     user_restart_wrong(temp)
   }
   
@@ -362,6 +353,13 @@ server <- function(input, output, session) {
         if (last_try() & (disp_dig() == "GUESS")) {
           if (traverse() <= no_of_digs()) {
             if((dig_seq()[traverse()] == val)){
+              curr_time <- Sys.time()
+              if (no_of_digs() > 2) {
+                temp <- user_digit_click_time()
+                temp[(((no_of_digs()-3)*3) + (wrong_times()+1)), (traverse()+2)] <- as.numeric(difftime(curr_time, prev_hit_time(), units = "secs"))
+                user_digit_click_time(temp)
+                prev_hit_time(curr_time)
+              }
               traverse(traverse()+1)
               last_try(TRUE)
               waitress$inc((100 / (no_of_digs())))
@@ -371,7 +369,15 @@ server <- function(input, output, session) {
               }
               message("correct")
             } else {
+              curr_time <- Sys.time()
+              if (no_of_digs() > 2) {
+                temp <- user_digit_click_time()
+                temp[(((no_of_digs()-3)*3) + (wrong_times()+1)), (traverse()+2)] <- as.numeric(difftime(curr_time, prev_hit_time(), units = "secs"))
+                user_digit_click_time(temp)
+                prev_hit_time(curr_time)
+              }
               message("wrong")
+              last_try(FALSE)
               if (no_of_digs() > 2) {
                 write_dig_seq(dig_seq())
                 write_wrong()
@@ -379,7 +385,6 @@ server <- function(input, output, session) {
               waitress$set(0)
               waitress$close()
               traverse(traverse()+1)
-              last_try(FALSE)
               wrong_times(wrong_times() + 1)
               if (wrong_times() <= 2) {
                 wrong_input(id)
@@ -403,6 +408,13 @@ server <- function(input, output, session) {
                   gather(paste0("r", 1:100), key = "rounds", value = "n_times")
                 
                 write_csv(temp[1:(2*(no_of_digs()-2)),], "user_restart_wrong.csv", append = append_to_prev)
+                
+                temp <- user_digit_click_time()
+                temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
+                  add_column(ID = (last_ID+1)) %>%
+                  select(ID, everything())
+                
+                write_csv(temp, "user_digit_click_time.csv", append = append_to_prev)
               }
             }
           }
