@@ -27,6 +27,8 @@ user_restart_wrong_data <- tibble(
   variable = c("n_restarts", "n_wrongs")
 )
 user_restart_wrong_data[,paste0("r",1:100)] = 0
+index_wrong <- rep(-1, 3*100) # index of each sequence starts from 1 assume
+
 
 user_digit_click_time_data <- user_dig_seq %>%
   gather(colnames(user_dig_seq)[2:ncol(user_dig_seq)], key = "rounds", value = "dig_seq") %>%
@@ -173,6 +175,7 @@ server <- function(input, output, session) {
   # Last ID
   last_ID <- 0
   append_to_prev <- FALSE
+  index_wrong <- rep(0, 3*100)
   
   #------------- Deals with User Info
   observeEvent(input$start, {
@@ -279,10 +282,14 @@ server <- function(input, output, session) {
     user_dig_seq_temp <- user_dig_seq()
     message("****")
     message(seq_dig)
-    message(restart_times()+1)
-    message(no_of_digs()-1)
     user_dig_seq_temp[(wrong_times()+1), (no_of_digs()-1)] <- paste(seq_dig, collapse = "")
     user_dig_seq(user_dig_seq_temp)
+    index_wrong[(((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1)] <<- traverse()
+    print((((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1))
+    print("^^")
+    print(index_wrong[(((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1)])
+    print("^^")
+    print(index_wrong[1:((((no_of_digs()-1) %/% 3)*3) + (wrong_times()+1))])
     print(user_dig_seq())
   }
   
@@ -384,7 +391,8 @@ server <- function(input, output, session) {
                 temp <- temp %>%
                   add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
                   select(ID, everything()) %>%
-                  gather(paste0("r", 1:100), key = "rounds", value = "dig_seq")
+                  gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
+                  add_column(mis_ind = index_wrong)
                 
                 write_csv(temp[1:(3*(no_of_digs()-2)),], "user_dig_seq.csv", append = append_to_prev)
                 
