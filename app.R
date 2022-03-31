@@ -28,6 +28,11 @@ user_restart_wrong_data <- tibble(
 )
 user_restart_wrong_data[,paste0("r",1:100)] = 0
 
+user_digit_click_time_data <- user_dig_seq %>%
+  gather(colnames(user_dig_seq)[2:ncol(user_dig_seq)], key = "rounds", value = "dig_seq") %>%
+  select(try, rounds)
+
+user_digit_click_time_data[,paste0("c",1:102)] = 0
 
 #-------------------------------------------------- User Data/Info UI
 educat_choices <- c(0, 1, 2, 3, 4)
@@ -165,6 +170,10 @@ ui <- fluidPage(
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
   
+  # Last ID
+  last_ID <- 0
+  append_to_prev <- FALSE
+  
   #------------- Deals with User Info
   observeEvent(input$start, {
     
@@ -202,13 +211,16 @@ server <- function(input, output, session) {
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
     #all_dig_seq()[round_num()] <- dig_seq()
     message(dig_seq())
-    
-    curr_user_data <- tibble(age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env)
-    write_csv(
-      curr_user_data,
-      "user_data.csv",
-      append = TRUE
-    )
+
+    last_ID <<- 0
+    append_to_prev <<- FALSE
+    if (file.exists("user_data.csv")) {
+      temp <- read_csv("user_data.csv")
+      last_ID <<- temp$ID[length(temp$ID)]
+      append_to_prev <<- TRUE
+    }
+    curr_user_data <- tibble(ID = last_ID+1, age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env)
+    write_csv(curr_user_data, "user_data.csv", append = append_to_prev)
   })
 
   
@@ -366,8 +378,23 @@ server <- function(input, output, session) {
                 wrong_input(id)
               } else {
                 wrong_input(id, FALSE)
-                write_csv(user_dig_seq(), "user_dig_seq.csv", append = TRUE)
-                write_csv(user_restart_wrong(), "user_restart_wrong.csv", append = TRUE)
+                
+                # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
+                temp <- user_dig_seq()
+                temp <- temp %>%
+                  add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
+                  select(ID, everything()) %>%
+                  gather(paste0("r", 1:100), key = "rounds", value = "dig_seq")
+                
+                write_csv(temp[1:(3*(no_of_digs()-2)),], "user_dig_seq.csv", append = append_to_prev)
+                
+                temp <- user_restart_wrong()
+                temp <- temp %>%
+                  add_column(ID = c(last_ID+1, last_ID+1)) %>%
+                  select(ID, everything()) %>%
+                  gather(paste0("r", 1:100), key = "rounds", value = "n_times")
+                
+                write_csv(temp[1:(2*(no_of_digs()-2)),], "user_restart_wrong.csv", append = append_to_prev)
               }
             }
           }
