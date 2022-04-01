@@ -24,7 +24,7 @@ user_digit_click_time_data <- user_dig_seq %>%
   gather(colnames(user_dig_seq)[2:ncol(user_dig_seq)], key = "rounds", value = "dig_seq") %>%
   select(try, rounds)
 
-user_digit_click_time_data[,paste0("c",1:102)] <- 0 # Here the c1 indicates the time difference(in secs) between guessing time start and a digit input(wrong/correct)
+user_digit_click_time_data[,paste0("c",1:102)] <- -1 # Here the c1 indicates the time difference(in secs) between guessing time start and a digit input(wrong/correct)
 
 
 #-------------------------------------------------- User Data/Info UI
@@ -397,9 +397,11 @@ server <- function(input, output, session) {
                   add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
                   select(ID, everything()) %>%
                   gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
-                  add_column(mis_ind = index_wrong)
+                  add_column(mis_ind = index_wrong) %>%
+                  filter(dig_seq != "") %>%
+                  arrange(parse_number(rounds), try)
                 
-                write_csv(temp[1:(3*(no_of_digs()-2)),], "user_dig_seq.csv", append = append_to_prev)
+                write_csv(temp, "user_dig_seq.csv", append = append_to_prev)
                 
                 temp <- user_restart_wrong()
                 temp <- temp %>%
@@ -412,7 +414,10 @@ server <- function(input, output, session) {
                 temp <- user_digit_click_time()
                 temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
                   add_column(ID = (last_ID+1)) %>%
-                  select(ID, everything())
+                  select(ID, rounds, everything()) %>%
+                  gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
+                  arrange(parse_number(rounds), try) %>%
+                  filter(time_diff != -1)
                 
                 write_csv(temp, "user_digit_click_time.csv", append = append_to_prev)
               }
