@@ -26,6 +26,7 @@ user_digit_click_time_data <- user_dig_seq %>%
 
 user_digit_click_time_data[,paste0("c",1:102)] <- -1 # Here the c1 indicates the time difference(in secs) between guessing time start and a digit input(wrong/correct)
 
+curr_user_data <- tibble(ID = 0, age = 0, sex = 0, educat = 0, job = 0, academic = 0, maths = 0, music = 0, env = 0)
 
 #-------------------------------------------------- User Data/Info UI
 educat_choices <- c(0, 1, 2, 3, 4)
@@ -137,13 +138,29 @@ all_correct <- function() {
   # updateActionButton(inputId = id, label = "O")
   updateActionButton(inputId = "restart", icon = icon("check"))
 }
+
+# ------------------------- Intro UI
+IntroUI <- tabPanelBody(
+  "introPanel",
+  h1("Digit Span Test"),
+  h2("Psychological Test for testing short term memory capacity")
+)
+
 # ------------------------- Test UI
 TestUI <- tabPanel(
   "DIGIT SPAN TEST",
+  value = "testPanel",
   splitLayout(
     span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle"),
     DigitPadUI
   )
+)
+
+# ------------------------ Results UI
+ResultUI <- tabPanel(
+  "PERFORMANCE",
+  value = "perfPanel",
+  
 )
 
 #-------------------------------------------------- Main UI
@@ -154,6 +171,10 @@ ui <- fluidPage(
     mainPanel(
       use_waiter(),
       tabsetPanel(
+        id = "main",
+        type = "hidden",
+        selected = "introPanel",
+        IntroUI,
         TestUI
       ),
     ),
@@ -169,7 +190,12 @@ server <- function(input, output, session) {
   index_wrong <- rep(0, 3*100)
   
   #------------- Deals with User Info
+  filled_once <- reactiveVal(FALSE)
+  curr_user <- reactiveVal(curr_user_data)
+  
   observeEvent(input$start, {
+    
+    if (filled_once()) { return() }
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
       
@@ -201,20 +227,15 @@ server <- function(input, output, session) {
     
     Sys.sleep(3)
     
+    updateTabsetPanel(inputId = "main", selected = "testPanel")
+    
     active(1)
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
     #all_dig_seq()[round_num()] <- dig_seq()
     message(dig_seq())
-
-    last_ID <<- 0
-    append_to_prev <<- FALSE
-    if (file.exists("user_data.csv")) {
-      temp <- read_csv("user_data.csv")
-      last_ID <<- temp$ID[length(temp$ID)]
-      append_to_prev <<- TRUE
-    }
-    curr_user_data <- tibble(ID = last_ID+1, age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env)
-    write_csv(curr_user_data, "user_data.csv", append = append_to_prev)
+    
+    curr_user(tibble(ID = last_ID+1, age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env))
+    filled_once(TRUE)
   })
 
   
@@ -392,6 +413,16 @@ server <- function(input, output, session) {
                 wrong_input(id, FALSE)
                 
                 # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
+                last_ID <<- 0
+                append_to_prev <<- FALSE
+                if (file.exists("user_data.csv")) {
+                  temp <- read_csv("user_data.csv")
+                  last_ID <<- temp$ID[length(temp$ID)]
+                  append_to_prev <<- TRUE
+                }
+                
+                write_csv(curr_user(), "user_data.csv", append = append_to_prev)
+                
                 temp <- user_dig_seq()
                 temp <- temp %>%
                   add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%

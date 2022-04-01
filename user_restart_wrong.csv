@@ -1,0 +1,17 @@
+ID,variable,rounds,n_times
+1,n_restarts,r1,0
+1,n_wrongs,r1,0
+1,n_restarts,r2,0
+1,n_wrongs,r2,0
+1,n_restarts,r3,0
+1,n_wrongs,r3,0
+1,n_restarts,r4,0
+1,n_wrongs,r4,0
+1,n_restarts,r5,0
+1,n_wrongs,r5,1
+1,n_restarts,r6,0
+1,n_wrongs,r6,0
+1,n_restarts,r7,2
+1,n_wrongs,r7,1
+1,n_restarts,r8,0
+1,n_wrongs,r8,3
