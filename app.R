@@ -142,9 +142,13 @@ all_correct <- function() {
 # ------------------------- Intro UI
 IntroUI <- tabPanelBody(
   "introPanel",
-  h1("Digit Span Test"),
-  h2("Psychological Test for testing short term memory capacity")
+  h1("Digit Span Test", align = "center"),
+  h2("Psychological Test for testing short term memory capacity", align = "center")
+  
 )
+
+
+
 
 # ------------------------- Test UI
 TestUI <- tabPanel(
