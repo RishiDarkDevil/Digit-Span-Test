@@ -50,10 +50,10 @@ UserDataUI <- sidebarPanel(
   radioButtons("sex", "Gender", choiceNames = c("Male", "Female"), choiceValues = c(0, 1)),
   
   selectInput("educat", "Education Qualification", choices = educat_choices),
-  bsTooltip("educat", "Select the last completed one"),
+  bsTooltip("educat", "Select the one you are currently pursuing. If not in Academia, select the one last completed."),
   
   selectInput("job", "Current Profession", choices = job_choices, selected = NULL),
-  bsTooltip("job", "Select Academia if you are Student/Professor/Teacher"),
+  bsTooltip("job", "Select Academia if you are Student/Professor/Teacher/Researcher"),
   
   sliderInput("academic", "Your Academic Performance", value = 3, min = 1, max = 5),
   bsTooltip("academic", "1 indicating bad and 5 indicating excellent"),
@@ -238,6 +238,14 @@ server <- function(input, output, session) {
     #all_dig_seq()[round_num()] <- dig_seq()
     message(dig_seq())
     
+    last_ID <<- 0
+    append_to_prev <<- FALSE
+    if (file.exists("user_data.csv")) {
+      temp <- read_csv("user_data.csv")
+      last_ID <<- temp$ID[length(temp$ID)]
+      append_to_prev <<- TRUE
+    }
+    
     curr_user(tibble(ID = last_ID+1, age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env))
     filled_once(TRUE)
   })
@@ -325,7 +333,7 @@ server <- function(input, output, session) {
   
   #--- Heading towards next test
   next_round <- function(restart = FALSE) {
-    if (wrong_times() <= 2) {
+    if (wrong_times() <= 1) {
       if (!restart & (no_of_digs() > 2) & last_try()) {
         write_dig_seq(dig_seq())
         #write_restart(restart_times())
@@ -349,7 +357,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$next_correct, {
-    if ((((traverse()-1) == no_of_digs()) | (!last_try())) & (wrong_times() <= 2)) {
+    if ((((traverse()-1) == no_of_digs()) | (!last_try())) & (wrong_times() <= 1)) {
       next_round()
       restart_times(0)
     }
@@ -360,10 +368,12 @@ server <- function(input, output, session) {
     # Restart Rules - Can restart 2 times in a round, Can restart only when all the numbers are displayed for a particular round
     # Can restart only if the user hasn't tried i.e. one cannot restart if he made a wrong guess
     # Restart is available only when the user hasn't tried anything
-    if (restart_times() <= 1 & disp_dig() == "GUESS" & last_try() & (traverse() == 1)) {
+    if (restart_times() < 1 & disp_dig() == "GUESS" & last_try() & (traverse() == 1)) {
       next_round(TRUE)
       restart_times(restart_times()+1)
-      write_restart(restart_times())
+      if (no_of_digs() > 2){
+        write_restart(restart_times())
+      }
     }
   })
   
@@ -411,20 +421,12 @@ server <- function(input, output, session) {
               waitress$close()
               traverse(traverse()+1)
               wrong_times(wrong_times() + 1)
-              if (wrong_times() <= 2) {
+              if (wrong_times() <= 1) {
                 wrong_input(id)
               } else {
                 wrong_input(id, FALSE)
                 
                 # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
-                last_ID <<- 0
-                append_to_prev <<- FALSE
-                if (file.exists("user_data.csv")) {
-                  temp <- read_csv("user_data.csv")
-                  last_ID <<- temp$ID[length(temp$ID)]
-                  append_to_prev <<- TRUE
-                }
-                
                 write_csv(curr_user(), "user_data.csv", append = append_to_prev)
                 
                 temp <- user_dig_seq()
