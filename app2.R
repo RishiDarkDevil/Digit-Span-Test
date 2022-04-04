@@ -154,10 +154,16 @@ IntroUI <- tabPanelBody(
 TestUI <- tabPanel(
   "DIGIT SPAN TEST",
   value = "testPanel",
-  splitLayout(
-    use_waitress()
-    span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle"),
-    DigitPadUI
+  fluidRow(
+    column(width = 1),
+    column(
+      width = 11,
+      splitLayout(
+        cellWidths = c("60%", "40%"),
+        span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle", align = "center"),
+        DigitPadUI
+      )
+    )
   )
 )
 
@@ -169,16 +175,16 @@ ResultUI <- tabPanel(
 )
 
 #-------------------------------------------------- Main UI
-
-
 ui <- dashboardPage(
   skin = "black",
   dashboardHeader(title = "DIGIT SPAN TEST"),
   dashboardSidebar(
+    tags$style(HTML(".main-sidebar{width: 15%;}")),
     UserDataUI
   ),
   dashboardBody(
     use_waiter(),
+    use_waitress(),
     tabsetPanel(
       id = "main",
       type = "hidden",
@@ -260,7 +266,7 @@ server <- function(input, output, session) {
   
   disp_dig <- reactiveVal("GO") # digit to be displayed
   active <- reactiveVal(4) # Random Number displayer iterator
-  dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE)) # the number to be guessed
+  dig_seq <- reactiveVal(sample(0:9, 2, replace = FALSE)) # the number to be GOed
   no_of_digs <- reactiveVal(2) # no of digits in the deg seq
   traverse <- reactiveVal(1) # traverse the deg seq to match with the user input if correct or not
   wrong_times <- reactiveVal(0) # No of wrong button clicks -- We will allow upto 3 mistakes
@@ -292,14 +298,14 @@ server <- function(input, output, session) {
       } else {
         waitress$close()
         if ((traverse() == 1) & ((active()-1) == no_of_digs())) {
-          disp_dig("GUESS")
+          disp_dig("GO")
         }
       }
     })
   })
   
   observe({
-    if (disp_dig() == "GUESS") {
+    if (disp_dig() == "GO") {
       enable_DigitPad()
       prev_hit_time(Sys.time())
     }
@@ -373,7 +379,7 @@ server <- function(input, output, session) {
     # Restart Rules - Can restart 2 times in a round, Can restart only when all the numbers are displayed for a particular round
     # Can restart only if the user hasn't tried i.e. one cannot restart if he made a wrong guess
     # Restart is available only when the user hasn't tried anything
-    if (restart_times() < 1 & disp_dig() == "GUESS" & last_try() & (traverse() == 1)) {
+    if (restart_times() < 1 & disp_dig() == "GO" & last_try() & (traverse() == 1)) {
       next_round(TRUE)
       restart_times(restart_times()+1)
       if (no_of_digs() > 2){
@@ -388,9 +394,9 @@ server <- function(input, output, session) {
     message(dig_seq())
     observe({
       isolate({
-        waitress <- Waitress$new(selector = "#display_digit", theme = "overlay-opacity",min = 0, max = 100)
+        waitress <- Waitress$new(selector = "#display_digit", theme = "overlay-opacity",min = 0, max = no_of_digs())
         
-        if (last_try() & (disp_dig() == "GUESS")) {
+        if (last_try() & (disp_dig() == "GO")) {
           if (traverse() <= no_of_digs()) {
             if((dig_seq()[traverse()] == val)){
               curr_time <- Sys.time()
@@ -402,7 +408,7 @@ server <- function(input, output, session) {
               }
               traverse(traverse()+1)
               last_try(TRUE)
-              waitress$inc((100 / (no_of_digs())))
+              waitress$inc(1)
               if ((traverse()-1) == no_of_digs()) {
                 waitress$close()
                 all_correct()
