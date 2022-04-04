@@ -51,7 +51,7 @@ user_data_dig_span
 
 # Age Wise Performance
 user_dig_span_age <- user_data_dig_span %>%
-  mutate(age = cut(age, breaks = c(5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100), right = FALSE))
+  mutate(age = as.factor(ifelse(age < 10, 1, ifelse(age < 20, 2, ifelse(age < 30, 3, ifelse(age < 40, 4, ifelse(age < 50, 5, ifelse(age < 60, 6, ifelse(age < 70, 7, 8)))))))))
 user_dig_span_age
 
 user_dig_span_age %>%
@@ -123,7 +123,8 @@ user_dig_span_age_click_time
 user_dig_span_age_click_time %>%
   group_by(age, rounds) %>%
   summarise(mean_time_diff = mean(time_diff)) %>%
-  mutate(rounds = parse_number(rounds)) %>%
+  mutate(age = as.numeric(age)) %>%
   ggplot() +
-  geom_line(aes(rounds, mean_time_diff, color = age))
-  
+  geom_line(aes(age, mean_time_diff, color = rounds), size = 1.5)
+
+#   
