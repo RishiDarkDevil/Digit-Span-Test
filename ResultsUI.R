@@ -6,7 +6,7 @@ ResultUI <- tabPanelBody(
   value = "perfPanel",
   dashboardPage(
     dashboardHeader(title = "Your Performance"),
-    dashboardSidebar(),
+    dashboardSidebar(disable = TRUE),
     dashboardBody(
       tags$head(tags$style(HTML('.info-box {min-height: 60px;} .info-box-icon {height: 60px; line-height: 60px;} .info-box-content {padding-top: 0px; padding-bottom: 0px;}'))),
       fluidRow(
