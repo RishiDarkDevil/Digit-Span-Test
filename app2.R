@@ -359,6 +359,7 @@ server <- function(input, output, session) {
   # ---- Captures digit sequence
   write_dig_seq <- function(seq_dig) { # Write a digit sequence passed as arg to the current position in the user_dig_seq table
     user_dig_seq_temp <- user_dig_seq()
+    print(user_dig_seq_temp)
     user_dig_seq_temp[(wrong_times()+1), (no_of_digs()-1)] <- paste(seq_dig, collapse = "")
     user_dig_seq(user_dig_seq_temp)
     if (!last_try()) {
@@ -454,21 +455,6 @@ server <- function(input, output, session) {
     
     output$roundwisedata <- renderUI({
       tabs <- map(
-        as.vector(roundstimedata$rounds), ~tabPanel(
-          title = .x, 
-          value = str_replace_all(.x, fixed(" "), ""),
-          infoBoxOutput("Sequence", width = 8),
-          infoBoxOutput("Mistakes", width = 4),
-          infoBoxOutput("Time", width = 8),
-          infoBoxOutput("Restarts", width = 4)
-        )
-      )
-      args <- c(tabs, list(id = "rounds", title = "Rounds", height = "250px", width = 12))
-      do.call(tabBox, args)
-    })
-    
-    output$roundwisedata <- renderUI({
-      tabs <- map(
         1:nrow(roundstimedata), function(i){
           tabPanel(
             title = roundstimedata$rounds[i], 
@@ -480,7 +466,7 @@ server <- function(input, output, session) {
           )
         }
       )
-      args <- c(tabs, list(id = "rounds", title = "Rounds", height = "250px", width = 12))
+      args <- c(tabs, list(id = "tabrounds", title = "Rounds", height = "250px", width = 12))
       do.call(tabBox, args)
     })
     
@@ -516,7 +502,30 @@ server <- function(input, output, session) {
       }
     )
     
+    output$time_each_round <- renderPlot({
+      avg_time_per_round <- user_digit_click_time() %>%
+        group_by(rounds) %>%
+        summarise(mean_time_diff = mean(time_diff))
+      
+      avg_time_per_round %>%
+        mutate(rounds = parse_number(rounds)) %>%
+        ggplot() +
+        geom_line(aes(rounds, mean_time_diff), size = 2)
+    })
   }
+  
+  output$time_this_round <- renderPlot({
+    time_per_round<- user_digit_click_time() %>%
+      filter(rounds == paste0("r",parse_number(input$tabrounds))) %>%
+      group_by(try, clicks) %>%
+      mutate(try = as.factor(try)) %>%
+      summarise(mean_time_diff = mean(time_diff))
+    
+    time_per_round %>%
+      mutate(clicks = parse_number(clicks)) %>%
+      ggplot() +
+      geom_line(aes(clicks, mean_time_diff, color = try), size = 1.5)
+  })
   
   #--- Restarting 
   observeEvent(input$restart, {
