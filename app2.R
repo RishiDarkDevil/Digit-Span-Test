@@ -188,22 +188,22 @@ ResultUI <- tabPanelBody(
             width = 6,
             uiOutput("roundwisedata"),
             box(
-              title = "Average Click Time Each Round", status = "primary", solidHeader = TRUE, width = 12,
+              title = "Average Click Time in Each Round", status = "primary", solidHeader = TRUE, width = 12,
               plotOutput("time_each_round")
             )
           ),
           column(
             width = 6,
             box(
-              title = "Click Times in this Round", status = "primary", solidHeader = TRUE, width = 12,
+              title = "Click Times in Selected Round", status = "primary", solidHeader = TRUE, width = 12,
               plotOutput("time_this_round")
             ),
             box(
               title = "Leaderboard", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
-              infoBox("Digit Span", "Top 10%", icon = icon("list"), fill = TRUE, width = 6),
-              infoBox("Fill Something", "1", icon = icon("times"), fill = TRUE, width = 6),
-              infoBox("Time Taken", "Top 20%", icon = icon("clock"), fill = TRUE, width = 6),
-              infoBox("Fill Something", "1", icon = icon("redo"), fill = TRUE, width = 6)
+              infoBoxOutput("DSPRank", width = 6),
+              infoBoxOutput("NumAgeCompetitors", width = 6),
+              infoBoxOutput("TimeRankWithSameDSPRank", width = 6),
+              infoBoxOutput("NumAcademicCompetitors", width = 6)
             )
           )
         )
@@ -510,7 +510,48 @@ server <- function(input, output, session) {
       avg_time_per_round %>%
         mutate(rounds = parse_number(rounds)) %>%
         ggplot() +
-        geom_line(aes(rounds, mean_time_diff), size = 2)
+        geom_line(aes(rounds, mean_time_diff), size = 2) +
+        labs(
+          x = "Clicks",
+          y = "Average Time Taken"
+        ) +
+        theme_bw() +
+        theme(
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "black"),
+          strip.background = element_blank()
+        ) 
+    })
+    
+    user_data_temp <- read_csv("user_data.csv")
+    user_dig_seq_temp <- read_csv("user_dig_seq.csv")
+    user_restart_wrong_temp <- read_csv("user_restart_wrong.csv")
+    user_digit_click_time_temp <- read_csv("user_digit_click_time.csv")
+    
+    output$DSPRank <- renderInfoBox({
+      digit_span_per_ID <- user_dig_seq_temp %>%
+        group_by(ID) %>%
+        summarise(dig_span = max(parse_number(rounds))+1)
+      digit_span_per_ID
+      
+      user_data_dig_span <- left_join(user_data_temp, digit_span_per_ID, by = "ID")
+      
+      user_data_dig_span <- user_data_dig_span %>%
+        arrange(dig_span, age, educat, academic, maths, music, job, env) %>%
+        add_column(ranking = 1:nrow(user_data_dig_span))
+      
+      curr_user_rank <- user_data_dig_span %>%
+        filter(ID == (last_ID+1))
+      rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span)
+      ranktext <- paste0("Top ",round(rankpercent), "%")
+      
+      infoBox("Digit Span", ranktext, icon = icon("list"), fill = TRUE)
+    })
+    
+    output$TimeRankWithSameDSPRank <- renderInfoBox({
+      
     })
   }
   
@@ -524,7 +565,22 @@ server <- function(input, output, session) {
     time_per_round %>%
       mutate(clicks = parse_number(clicks)) %>%
       ggplot() +
-      geom_line(aes(clicks, mean_time_diff, color = try), size = 1.5)
+      geom_line(aes(clicks, mean_time_diff, color = try), size = 2) +
+      labs(
+        x = "Clicks",
+        y = "Time Taken",
+        color = "Try"
+      ) +
+      theme_bw() +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        strip.background = element_blank()
+      ) +
+      ggtitle(paste("Round", parse_number(input$tabrounds)))
   })
   
   #--- Restarting 
