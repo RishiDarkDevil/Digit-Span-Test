@@ -31,15 +31,12 @@ curr_user_data <- tibble(ID = 0, age = 0, sex = 0, educat = 0, job = 0, academic
 #-------------------------------------------------- User Data/Info UI
 educat_choices <- c(0, 1, 2, 3, 4)
 educat_choices <- setNames(educat_choices, c("Still in school, below 12th Grade", "12th Grade", "Bachelors", "Masters", "PhD"))
-educat_choices
 
 job_choices <- c(0, 1, 2, 3)
 job_choices <- setNames(job_choices, c("Academia", "Industry", "Business", "Not working yet"))
-job_choices
 
 env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
-env_choices
 
 UserDataUI <- fluidPage(
   titlePanel("YOUR INFO", "Digit Span Test"),
@@ -131,6 +128,7 @@ wrong_input <- function(id, retry = TRUE) {
     updateActionButton(inputId = "next_correct", icon = icon("redo"))
   } else {
     updateActionButton(inputId = "next_correct", icon = icon("flag-checkered"))
+    updateActionButton(inputId = "restart", icon = icon("chart-line"))
   }
 }
 
@@ -151,8 +149,7 @@ IntroUI <- tabPanelBody(
 
 
 # ------------------------- Test UI
-TestUI <- tabPanel(
-  "DIGIT SPAN TEST",
+TestUI <- tabPanelBody(
   value = "testPanel",
   fluidRow(
     column(width = 1),
@@ -168,16 +165,56 @@ TestUI <- tabPanel(
 )
 
 # ------------------------ Results UI
-ResultUI <- tabPanel(
-  "PERFORMANCE",
+ResultUI <- tabPanelBody(
   value = "perfPanel",
-  
+    useShinydashboard(),
+    tags$head(tags$style(HTML('.info-box {min-height: 60px;} .info-box-icon {height: 60px; line-height: 60px;} .info-box-content {padding-top: 0px; padding-bottom: 0px;}'))),
+    fluidRow(
+      h1("Your Performace", align = "center", style = "font-weight: bold")
+    ),
+    fluidRow(
+      column(width = 1),
+      column(
+        width = 11,
+        fluidRow(
+          valueBoxOutput("DSPScore", width = 3),
+          valueBoxOutput("TotalTime", width = 3),
+          # bsTooltip(""),
+          valueBoxOutput("TotalMistakes", width = 3),
+          valueBoxOutput("TotalRestarts", width = 3)
+        ),
+        fluidRow(
+          column(
+            width = 6,
+            uiOutput("roundwisedata"),
+            box(
+              title = "Average Click Time Each Round", status = "primary", solidHeader = TRUE, width = 12,
+              plotOutput("time_each_round")
+            )
+          ),
+          column(
+            width = 6,
+            box(
+              title = "Click Times in this Round", status = "primary", solidHeader = TRUE, width = 12,
+              plotOutput("time_this_round")
+            ),
+            box(
+              title = "Leaderboard", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+              infoBox("Digit Span", "Top 10%", icon = icon("list"), fill = TRUE, width = 6),
+              infoBox("Fill Something", "1", icon = icon("times"), fill = TRUE, width = 6),
+              infoBox("Time Taken", "Top 20%", icon = icon("clock"), fill = TRUE, width = 6),
+              infoBox("Fill Something", "1", icon = icon("redo"), fill = TRUE, width = 6)
+            )
+          )
+        )
+      )
+    )
 )
 
 #-------------------------------------------------- Main UI
 ui <- dashboardPage(
   skin = "black",
-  dashboardHeader(title = "DIGIT SPAN TEST"),
+  dashboardHeader(title = "DIGIT SPAN TEST", titleWidth = "15%"),
   dashboardSidebar(
     tags$style(HTML(".main-sidebar{width: 15%;}")),
     UserDataUI
@@ -189,8 +226,10 @@ ui <- dashboardPage(
       id = "main",
       type = "hidden",
       selected = "introPanel",
+      #selected = "perfPanel",
       IntroUI,
-      TestUI
+      TestUI,
+      ResultUI
     )
   )
 )
@@ -209,7 +248,7 @@ server <- function(input, output, session) {
   curr_user <- reactiveVal(curr_user_data)
   
   observeEvent(input$start, {
-    
+    print(".")
     if (filled_once()) { return() }
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
@@ -276,6 +315,9 @@ server <- function(input, output, session) {
   user_restart_wrong <- reactiveVal(user_restart_wrong_data) # Store the number of times reset and wrong was clicked in each round
   user_digit_click_time <- reactiveVal(user_digit_click_time_data) # Stores the time between clicks of the digits
   prev_hit_time <- reactiveVal(Sys.time()) # Stores absolute time of when the prev button was clicked
+  net_tot_time <- reactiveVal(0)
+  net_mistakes <- reactiveVal(0)
+  net_restarts <- reactiveVal(0)
   #round_num <- reactiveVal(1) # Round Number
   
   #last_hit_dig <- reactiveVal(-1) # what was the last clicked button label
@@ -374,9 +416,111 @@ server <- function(input, output, session) {
     }
   })
   
+  # ---- Results Helper Function
+  performancePanelSetup <- function(){
+    output$DSPScore <- renderValueBox({
+      valueBox((no_of_digs()-1), "Digit Span Score", icon = icon("trophy"))
+    })
+    output$TotalTime <- renderValueBox({
+      valueBox(round(net_tot_time(), 2), "Total Time Taken", icon = icon("clock"))
+    })
+    output$TotalMistakes <- renderValueBox({
+      valueBox(net_mistakes(), "Mistakes", icon = icon("times"))
+    })
+    output$TotalRestarts <- renderValueBox({
+      valueBox(net_restarts(), "Restarts", icon = icon("sync"))
+    })
+    
+    roundsdata <- tibble(
+      rounds = user_dig_seq()$rounds,
+      dig_seq = user_dig_seq()$dig_seq
+    )
+    
+    roundstimedata <- user_digit_click_time() %>%
+      group_by(rounds) %>%
+      summarise(time_taken = sum(time_diff))
+    
+    roundsdata <- roundsdata %>%
+      full_join(roundstimedata) %>%
+      full_join(user_restart_wrong()) %>%
+      mutate(rounds = paste("Round", parse_number(rounds)))
+    
+    print(roundsdata)
+    
+    roundstimedata <- roundstimedata %>%
+      mutate(rounds = paste("Round", parse_number(rounds)))
+    
+    print(roundstimedata)
+    
+    output$roundwisedata <- renderUI({
+      tabs <- map(
+        as.vector(roundstimedata$rounds), ~tabPanel(
+          title = .x, 
+          value = str_replace_all(.x, fixed(" "), ""),
+          infoBoxOutput("Sequence", width = 8),
+          infoBoxOutput("Mistakes", width = 4),
+          infoBoxOutput("Time", width = 8),
+          infoBoxOutput("Restarts", width = 4)
+        )
+      )
+      args <- c(tabs, list(id = "rounds", title = "Rounds", height = "250px", width = 12))
+      do.call(tabBox, args)
+    })
+    
+    output$roundwisedata <- renderUI({
+      tabs <- map(
+        1:nrow(roundstimedata), function(i){
+          tabPanel(
+            title = roundstimedata$rounds[i], 
+            value = str_replace_all(roundstimedata$rounds[i], fixed(" "), ""),
+            infoBoxOutput(paste0("Sequence",i), width = 8),
+            infoBoxOutput(paste0("Mistakes",i), width = 4),
+            infoBoxOutput(paste0("Time", i), width = 8),
+            infoBoxOutput(paste0("Restarts", i), width = 4)
+          )
+        }
+      )
+      args <- c(tabs, list(id = "rounds", title = "Rounds", height = "250px", width = 12))
+      do.call(tabBox, args)
+    })
+    
+    map(
+      1:nrow(roundstimedata),
+      function(k) {
+        print(paste("Round---", k))
+        output[[paste0("Sequence", k)]] <- renderInfoBox({
+          round_dig_seq <- roundsdata %>%
+            filter(rounds == paste("Round", k))
+          round_dig_seq <- unique(round_dig_seq$dig_seq)
+          print(paste(round_dig_seq, collapse = "\n"))
+          infoBox("Sequence", paste(round_dig_seq, collapse = ", "), icon = icon("list"))
+        })
+        output[[paste0("Mistakes",k)]] <- renderInfoBox({
+          round_mistakes <- user_restart_wrong() %>%
+            filter((rounds == paste0("r", k)) & (variable == "n_wrongs"))
+          round_mistakes <- round_mistakes$n_times
+          print(round_mistakes)
+          infoBox("Mistakes", round_mistakes, icon = icon("times"))
+        })
+        output[[paste0("Time",k)]] <- renderInfoBox({
+          print(roundstimedata$time_taken[k])
+          infoBox("Time", roundstimedata$time_taken[k], icon = icon("clock"))
+        })
+        output[[paste0("Restarts",k)]] <- renderInfoBox({
+          round_restarts <- user_restart_wrong() %>%
+            filter((rounds == paste0("r", k)) & (variable == "n_restarts"))
+          round_restarts <- round_restarts$n_times
+          print(round_restarts)
+          infoBox("Restarts", round_restarts, icon = icon("sync"))
+        })
+      }
+    )
+    
+  }
+  
   #--- Restarting 
   observeEvent(input$restart, {
-    # Restart Rules - Can restart 2 times in a round, Can restart only when all the numbers are displayed for a particular round
+    # Restart Rules - Can restart 1 time in a round, Can restart only when all the numbers are displayed for a particular round
     # Can restart only if the user hasn't tried i.e. one cannot restart if he made a wrong guess
     # Restart is available only when the user hasn't tried anything
     if (restart_times() < 1 & disp_dig() == "GO" & last_try() & (traverse() == 1)) {
@@ -385,6 +529,10 @@ server <- function(input, output, session) {
       if (no_of_digs() > 2){
         write_restart(restart_times())
       }
+    }
+    if (wrong_times() > 1) {
+      updateTabsetPanel(inputId = "main", selected = "perfPanel")
+      performancePanelSetup()
     }
   })
   
@@ -449,6 +597,8 @@ server <- function(input, output, session) {
                   filter(dig_seq != "") %>%
                   arrange(parse_number(rounds), try)
                 
+                user_dig_seq(temp)
+                
                 write_csv(temp, "user_dig_seq.csv", append = append_to_prev)
                 
                 temp <- user_restart_wrong()
@@ -456,6 +606,18 @@ server <- function(input, output, session) {
                   add_column(ID = c(last_ID+1, last_ID+1)) %>%
                   select(ID, everything()) %>%
                   gather(paste0("r", 1:100), key = "rounds", value = "n_times")
+                
+                tot_wrongs <- temp %>%
+                  filter(variable == "n_wrongs") %>%
+                  summarise(tot_wrongs = sum(n_times))
+                net_mistakes((tot_wrongs$tot_wrongs)[1])
+                
+                tot_restarts <- temp %>%
+                  filter(variable == "n_restarts") %>%
+                  summarise(tot_restarts = sum(n_times))
+                net_restarts((tot_restarts$tot_restarts)[1])
+                
+                user_restart_wrong(temp[1:(2*(no_of_digs()-2)),])
                 
                 write_csv(temp[1:(2*(no_of_digs()-2)),], "user_restart_wrong.csv", append = append_to_prev)
                 
@@ -466,6 +628,14 @@ server <- function(input, output, session) {
                   gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
                   arrange(parse_number(rounds), try) %>%
                   filter(time_diff != -1)
+                net_time <- temp %>%
+                  mutate(rounds = parse_number(rounds)) %>%
+                  filter(rounds != no_of_digs()) %>%
+                  summarise(tot_time = sum(time_diff))
+                net_time <- (net_time$tot_time)[1]
+                net_tot_time(net_time)
+                
+                user_digit_click_time(temp)
                 
                 write_csv(temp, "user_digit_click_time.csv", append = append_to_prev)
               }
