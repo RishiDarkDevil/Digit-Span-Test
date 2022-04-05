@@ -157,7 +157,6 @@ user_data_time <- full_join(full_join(user_data, avg_time_per_round_per_ID, by =
 print(user_data_time, n = 100)
 
 user_data_time <- user_data_time %>%
-  select(-ranking) %>%
   filter(dig_span == 9) %>%
   arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
   add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == 9)))
@@ -178,14 +177,34 @@ user_data_time <- full_join(full_join(user_data, avg_time_per_round_per_ID, by =
 user_data_time
 
 user_data_time <- user_data_time %>%
-  select(-ranking) %>%
-  filter(dig_span == 9) %>%
+  filter(dig_span == 8) %>%
   arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
-  add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == 9)))
+  add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == 8)))
 user_data_time
 
 curr_user_rank <- user_data_time %>%
-  filter(ID == 3)
+  filter(ID == 59)
 rankpercent <- (curr_user_rank$ranking)*100 / nrow(user_data_time)
 ranktext <- paste0(round(rankpercent), "%")
 ranktext
+
+# Calculating Net Ranking
+user_data_dig_span_time <- user_digit_click_time %>%
+  group_by(ID) %>%
+  summarise(mean_time_diff = mean(time_diff), sum_time_diff = sum(time_diff)) 
+user_data_dig_span_time
+
+user_data_dig_span_time <- full_join(user_data_dig_span_time, user_data_dig_span)
+print(user_data_dig_span_time, n = 100)
+
+user_data_dig_span_time <- user_data_dig_span_time %>%
+  arrange(dig_span, sum_time_diff, mean_time_diff) %>%
+  add_column(ranking = 1:nrow(user_data_dig_span_time))
+user_data_dig_span_time
+
+curr_user_rank <- user_data_dig_span_time %>%
+  filter(ID == 3)
+rankpercent <- (nrow(user_data_dig_span_time) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span_time)
+ranktext <- paste0("Top ", round(rankpercent,2), "%")
+ranktext
+rankpercent
