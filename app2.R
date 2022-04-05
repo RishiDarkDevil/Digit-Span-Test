@@ -199,11 +199,11 @@ ResultUI <- tabPanelBody(
               plotOutput("time_this_round")
             ),
             box(
-              title = "Leaderboard", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+              title = "Your Position", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
               infoBoxOutput("DSPRank", width = 6),
-              infoBoxOutput("NumAgeCompetitors", width = 6),
-              infoBoxOutput("TimeRankWithSameDSPRank", width = 6),
-              infoBoxOutput("NumAcademicCompetitors", width = 6)
+              infoBoxOutput("NumCompetitors", width = 6),
+              infoBoxOutput("MeanTimeRankWithSameDSPRank", width = 6),
+              infoBoxOutput("TotTimeRankWithSameDSPRank", width = 6)
             )
           )
         )
@@ -512,7 +512,7 @@ server <- function(input, output, session) {
         ggplot() +
         geom_line(aes(rounds, mean_time_diff), size = 2) +
         labs(
-          x = "Clicks",
+          x = "Rounds",
           y = "Average Time Taken"
         ) +
         theme_bw() +
@@ -527,32 +527,79 @@ server <- function(input, output, session) {
     
     user_data_temp <- read_csv("user_data.csv")
     user_dig_seq_temp <- read_csv("user_dig_seq.csv")
-    user_restart_wrong_temp <- read_csv("user_restart_wrong.csv")
     user_digit_click_time_temp <- read_csv("user_digit_click_time.csv")
     
+    # Calculating DSP Ranking 
+    digit_span_per_ID <- user_dig_seq_temp %>%
+      group_by(ID) %>%
+      summarise(dig_span = max(parse_number(rounds))+1)
+    
+    user_data_dig_span <- left_join(user_data_temp, digit_span_per_ID, by = "ID")
+    
+    user_data_dig_span <- user_data_dig_span %>%
+      arrange(dig_span, age, educat, academic, maths, music, job, env) %>%
+      add_column(ranking = 1:nrow(user_data_dig_span))
+    
+    curr_user_rank <- user_data_dig_span %>%
+      filter(ID == (last_ID+1))
+    rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span)
+    DSPranktext <- paste0("Top ",round(rankpercent, 2), "%")
+    
+    # Calculating Mean Time Ranking with same DSP Rank
+    avg_time_per_round_per_ID <- user_digit_click_time_temp %>%
+      group_by(ID) %>%
+      summarise(mean_time_diff = mean(time_diff))
+    
+    user_data_time <- full_join(full_join(user_data_temp, avg_time_per_round_per_ID, by = "ID"), user_data_dig_span)
+    print(user_data_time, n = 100)
+    
+    user_data_time <- user_data_time %>%
+      select(-ranking) %>%
+      filter(dig_span == (no_of_digs()-1)) %>%
+      arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
+      add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == (no_of_digs()-1))))
+    
+    curr_user_rank <- user_data_time %>%
+      filter(ID == (last_ID+1))
+    rankpercent <- ifelse(nrow(user_data_time) == 0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
+    MeanTimeranktext <- paste0("Top ", round(rankpercent, 2), "%")
+    
+    # Calculating Total Time Ranking with same DSP Rank
+    avg_time_per_round_per_ID <- user_digit_click_time_temp %>%
+      group_by(ID) %>%
+      summarise(mean_time_diff = sum(time_diff))
+    
+    user_data_time <- full_join(full_join(user_data_temp, avg_time_per_round_per_ID, by = "ID"), user_data_dig_span)
+    
+    user_data_time <- user_data_time %>%
+      select(-ranking) %>%
+      filter(dig_span == (no_of_digs()-1)) %>%
+      arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
+      add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == (no_of_digs()-1))))
+    
+    
+    curr_user_rank <- user_data_time %>%
+      filter(ID == (last_ID+1))
+    rankpercent <- ifelse(nrow(user_data_time)==0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
+    TotalTimeranktext <- paste0("Top ", round(rankpercent, 2), "%")
+    
+    
     output$DSPRank <- renderInfoBox({
-      digit_span_per_ID <- user_dig_seq_temp %>%
-        group_by(ID) %>%
-        summarise(dig_span = max(parse_number(rounds))+1)
-      digit_span_per_ID
-      
-      user_data_dig_span <- left_join(user_data_temp, digit_span_per_ID, by = "ID")
-      
-      user_data_dig_span <- user_data_dig_span %>%
-        arrange(dig_span, age, educat, academic, maths, music, job, env) %>%
-        add_column(ranking = 1:nrow(user_data_dig_span))
-      
-      curr_user_rank <- user_data_dig_span %>%
-        filter(ID == (last_ID+1))
-      rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span)
-      ranktext <- paste0("Top ",round(rankpercent), "%")
-      
-      infoBox("Digit Span", ranktext, icon = icon("list"), fill = TRUE)
+      infoBox("Digit Span", DSPranktext, icon = icon("list"), fill = TRUE)
     })
     
-    output$TimeRankWithSameDSPRank <- renderInfoBox({
-      
+    output$MeanTimeRankWithSameDSPRank <- renderInfoBox({
+      infoBox("Mean Time Taken", MeanTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE)
     })
+    
+    output$TotTimeRankWithSameDSPRank <- renderInfoBox({
+      infoBox("Total Time Taken", TotalTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE)
+    })
+    
+    output$NumCompetitors <- renderInfoBox({
+      infoBox("Number of Competitors", nrow(user_data_temp), icon = icon("users"), fill = TRUE)
+    })
+    
   }
   
   output$time_this_round <- renderPlot({

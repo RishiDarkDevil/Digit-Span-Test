@@ -148,4 +148,44 @@ rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(us
 ranktext <- paste0(round(rankpercent), "%")
 ranktext
 
-# Calculating Time Ranking with same DSP Rank
+# Calculating Mean Time Ranking with same DSP Rank
+avg_time_per_round_per_ID <- user_digit_click_time %>%
+  group_by(ID) %>%
+  summarise(mean_time_diff = mean(time_diff))
+
+user_data_time <- full_join(full_join(user_data, avg_time_per_round_per_ID, by = "ID"), user_data_dig_span)
+print(user_data_time, n = 100)
+
+user_data_time <- user_data_time %>%
+  select(-ranking) %>%
+  filter(dig_span == 9) %>%
+  arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
+  add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == 9)))
+user_data_time
+
+curr_user_rank <- user_data_time %>%
+  filter(ID == 3)
+rankpercent <- (curr_user_rank$ranking)*100 / nrow(user_data_time)
+ranktext <- paste0(round(rankpercent), "%")
+ranktext
+
+# Calculating Total Time Ranking with same DSP Rank
+avg_time_per_round_per_ID <- user_digit_click_time %>%
+  group_by(ID) %>%
+  summarise(mean_time_diff = sum(time_diff))
+
+user_data_time <- full_join(full_join(user_data, avg_time_per_round_per_ID, by = "ID"), user_data_dig_span)
+user_data_time
+
+user_data_time <- user_data_time %>%
+  select(-ranking) %>%
+  filter(dig_span == 9) %>%
+  arrange(mean_time_diff, age, educat, academic, maths, music, job, env) %>%
+  add_column(ranking = 1:nrow(user_data_time %>% filter(dig_span == 9)))
+user_data_time
+
+curr_user_rank <- user_data_time %>%
+  filter(ID == 3)
+rankpercent <- (curr_user_rank$ranking)*100 / nrow(user_data_time)
+ranktext <- paste0(round(rankpercent), "%")
+ranktext
