@@ -32,7 +32,7 @@ time_per_round_per_ID <- user_digit_click_time %>%
 time_per_round_per_ID  
 
 time_per_round_per_ID %>%
-  filter(ID == 3) %>%
+  filter(ID == 39) %>%
   mutate(ID = as.character(ID), clicks = parse_number(clicks)) %>%
   ggplot() +
   geom_line(aes(clicks, mean_time_diff, color = rounds), size = 1.5) +
