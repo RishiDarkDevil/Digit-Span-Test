@@ -127,4 +127,43 @@ user_dig_span_age_click_time %>%
   ggplot() +
   geom_line(aes(age, mean_time_diff, color = rounds), size = 1.5)
 
-#   
+# Calculating Ranking
+digit_span_per_ID <- user_dig_seq %>%
+  group_by(ID) %>%
+  summarise(dig_span = max(parse_number(rounds))+1)
+digit_span_per_ID
+
+user_data_dig_span <- left_join(user_data, digit_span_per_ID, by = "ID")
+user_data_dig_span
+
+user_data_dig_span <- user_data_dig_span %>%
+  arrange(dig_span, age, educat, academic, maths, music, job, env) %>%
+  add_column(ranking = 1:nrow(user_data_dig_span))
+
+user_data_dig_span
+
+curr_user_rank <- user_data_dig_span %>%
+  filter(ID == 32)
+rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span)
+ranktext <- ""
+if (rankpercent <= 10) {
+  ranktext <- "10%"
+} else if (rankpercent <= 20) {
+  ranktext <- "20%"
+} else if (rankpercent <= 30) {
+  ranktext <- "30%"
+} else if (rankpercent <= 40) {
+  ranktext <- "40%"
+} else if (rankpercent <= 50) {
+  ranktext <- "50%"
+} else if (rankpercent <= 60) {
+  ranktext <- "60%"
+} else if (rankpercent <= 70) {
+  ranktext <- "70%"
+} else if (rankpercent <= 80) {
+  ranktext <- "80%"
+} else if (rankpercent <= 90) {
+  ranktext <- "90%"
+} else {
+  ranktext <- "100%"
+}
