@@ -140,7 +140,7 @@ all_correct <- function() {
 # ------------------------- Intro UI
 IntroUI <- tabPanelBody(
   "introPanel",
-  h1("Digit Span Test", align = "center"),
+  h1("Digit Span Test", align = "center", style = "font-weight: bold"),
   h2("Psychological Test for testing short term memory capacity", align = "center")
   
 )
@@ -170,7 +170,7 @@ ResultUI <- tabPanelBody(
     useShinydashboard(),
     tags$head(tags$style(HTML('.info-box {min-height: 60px;} .info-box-icon {height: 60px; line-height: 60px;} .info-box-content {padding-top: 0px; padding-bottom: 0px;}'))),
     fluidRow(
-      h1("Your Performace", align = "center", style = "font-weight: bold")
+      h1(textOutput("ResultHead"), align = "center", style = "font-weight: bold")
     ),
     fluidRow(
       column(width = 1),
@@ -199,7 +199,7 @@ ResultUI <- tabPanelBody(
               plotOutput("time_this_round")
             ),
             box(
-              title = "Your Position", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+              title = "Your Position Insight", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
               infoBoxOutput("DSPRank", width = 6),
               infoBoxOutput("NumCompetitors", width = 6),
               infoBoxOutput("MeanTimeRankWithSameDSPRank", width = 6),
@@ -419,6 +419,7 @@ server <- function(input, output, session) {
   
   # ---- Results Helper Function
   performancePanelSetup <- function(){
+    
     output$DSPScore <- renderValueBox({
       valueBox((no_of_digs()-1), "Digit Span Score", icon = icon("trophy"))
     })
@@ -542,8 +543,10 @@ server <- function(input, output, session) {
     
     curr_user_rank <- user_data_dig_span %>%
       filter(ID == (last_ID+1))
-    rankpercent <- (nrow(user_data_dig_span) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span)
-    DSPranktext <- paste0("Top ",round(rankpercent, 2), "%")
+    
+    rankpercent <- nrow(user_data_dig_span %>% filter(dig_span == (no_of_digs()-1)))*100 / nrow(user_data_dig_span)
+    DSPranktext <- paste0(round(rankpercent, 2), "%")
+    DSPranktext <- ifelse(round(rankpercent, 2) == 0.00, "1st Place", DSPranktext)
     
     # Calculating Mean Time Ranking with same DSP Rank
     avg_time_per_round_per_ID <- user_digit_click_time_temp %>%
@@ -562,7 +565,8 @@ server <- function(input, output, session) {
     curr_user_rank <- user_data_time %>%
       filter(ID == (last_ID+1))
     rankpercent <- ifelse(nrow(user_data_time) == 0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
-    MeanTimeranktext <- paste0("Top ", round(rankpercent, 2), "%")
+    MeanTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    MeanTimeranktext <- ifelse((round(rankpercent, 2) == 0.00) | (nrow(user_data_time) == 1), "1st Place", MeanTimeranktext)
     
     # Calculating Total Time Ranking with same DSP Rank
     avg_time_per_round_per_ID <- user_digit_click_time_temp %>%
@@ -581,11 +585,32 @@ server <- function(input, output, session) {
     curr_user_rank <- user_data_time %>%
       filter(ID == (last_ID+1))
     rankpercent <- ifelse(nrow(user_data_time)==0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
-    TotalTimeranktext <- paste0("Top ", round(rankpercent, 2), "%")
+    TotalTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    TotalTimeranktext <- ifelse((round(rankpercent, 2) == 0.00) | (nrow(user_data_time) == 1), "1st Place", TotalTimeranktext)
     
+    # Calculating Net Ranking
+    user_data_dig_span_time <- user_digit_click_time_temp %>%
+      group_by(ID) %>%
+      summarise(mean_time_diff = mean(time_diff), sum_time_diff = sum(time_diff)) 
+    
+    user_data_dig_span_time <- full_join(user_data_dig_span_time, user_data_dig_span)
+    
+    user_data_dig_span_time <- user_data_dig_span_time %>%
+      arrange(dig_span, sum_time_diff, mean_time_diff) %>%
+      mutate(ranking = 1:nrow(user_data_dig_span_time))
+    
+    curr_user_rank <- user_data_dig_span_time %>%
+      filter(ID == (last_ID+1))
+    rankpercent <- (nrow(user_data_dig_span_time) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span_time)
+    ranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    ranktext <- ifelse(round(rankpercent, 2) == 0.00, "1st Place", ranktext)
+    
+    output$ResultHead <- renderText({
+      paste("You are", ifelse(round(rankpercent, 2) == 0.00, "at", "in"), ranktext)
+    })
     
     output$DSPRank <- renderInfoBox({
-      infoBox("Digit Span", DSPranktext, icon = icon("list"), fill = TRUE)
+      infoBox("People with same Digit Span", DSPranktext, icon = icon("list"), fill = TRUE)
     })
     
     output$MeanTimeRankWithSameDSPRank <- renderInfoBox({
