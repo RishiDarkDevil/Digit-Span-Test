@@ -317,16 +317,15 @@ EntireTestResultsUI <- tabPanelBody(
   fluidPage(
     #theme = bs_theme(bootswatch = "darkly"),
     useShinydashboard(),
-    h1("Test Results", align = "center", style = "font-weight: bold"),
     fluidRow(
       column(
         width = 1
       ),
       column(
         width = 11,
+        h1("Test Results", align = "center", style = "font-weight: bold"),
+        h2("Digit Span Score and Factoring Variables", align = "center", style = "font-weight: bold"),
         fluidRow(
-          
-          width = 11,
           box(
             title = "Digit Span Score Distribution", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("DSPDist")
@@ -364,6 +363,7 @@ EntireTestResultsUI <- tabPanelBody(
             plotOutput("DSPvsEnv")
           )
         ),
+        h2("Mean Click Times and Factoring Variables", align = "center", style = "font-weight: bold"),
         fluidRow(
           box(
             title = "Mean Click Time Difference vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
@@ -397,6 +397,53 @@ EntireTestResultsUI <- tabPanelBody(
             title = "Mean Click Time Difference vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsEnv")
           )
+        ),
+        h2("Variation of Digit Span with Age and other Factoring Variables", align = "center", style = "font-weight: bold"),
+        fluidRow(
+          box(
+            title = "Digit Span Score vs Age vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsEducat")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsGender")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsJob")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsAcad")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsMaths")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsMusic")
+          ),
+          box(
+            title = "Digit Span Score vs Age vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAgevsEnv")
+          )
+        ),
+        h2("Interpretation", align = "center", style = "font-weight: bold"),
+        box(
+          title = "Interpretation", status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE,
+          tags$div(tags$ul(
+            tags$li(p("It is observed that with increase in age digit span decreases.", style = "font-size:150%")),
+            tags$li(p("It is observed that with increase in education level digit span increases.", style = "font-size:150%")),
+            tags$li(p("It is observed that those who play musical instrument or constantly in touch with Maths have higher digit span.", style = "font-size:150%")),
+            tags$li(p("It is observed that those who attempted test in a silent environment have better digit span scores.", style = "font-size:150%")),
+            tags$li(p("From individual results(available if you attempt the test on your own), it is observed the time taken between clicks is far less than the time taken near the starting and end of the digit. It may be explained in two ways- one is the person starts guessing and eventually speed increases but that does not justify higher end time. So it may be because when a person remembers a digit clearly he is more relaxed to click the button for that digit but when he doesn't then he quickly presses the buttons to make sure he doesn't forget it. So, it is also justified by the primacy and recency effects of the Modal Model.", style = "font-size:150%")),
+            tags$li(p("Mean Click Time increases with age which can be interpreted as more time is required to retrieve the digits.", style = "font-size:150%")),
+            tags$li(p("Mean Click Time decreases with increase in education level.", style = "font-size:150%")),
+            tags$li(p("Mean Click Time is less for subjects who play musical instrument or are in constantly touch with Maths.", style = "font-size:150%")),
+            tags$li(p("From individual results(available if you attempt the test on your own), it is observed the time taken between clicks is more for later rounds which maybe because in general larger digit sequence takes more time to be retrieved from memory which also makes it prone to forget some of the digits.", style = "font-size:150%")
+          )
+          )
         )
       )
     )
@@ -416,7 +463,7 @@ IntroUI <- tabPanelBody(
   "introPanel",
   h1("Digit Span Test", align = "center", style = "font-weight: bold"),
   h2("Psychological Test for testing short term memory capacity", align = "center"),
-  h3("Please Consider Taking the Test", align = "center"),
+  h3(tags$a(href="https://github.com/RishiDarkDevil", "By Rishi Dey Chowdhury(RishiDarkDevil)", target = "_blank"), align = "center"),
   fluidRow(
     column(width = 1),
     column(
@@ -433,7 +480,7 @@ IntroUI <- tabPanelBody(
       ),
       tags$div(tags$ul(
         tags$li(tags$span("Fill in the Details about 'YOUR INFO' on Left Side and Click 'Take Test' to begin.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
-        tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 2 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 1.5 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("The Digit Pad will be disabled when number display is in progress.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("A thin progress bar showing how much number is displayed is visible on top of the screen throughout this process.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("The random number sequence to be remembered will increase by 1 after each successful completion of round.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
@@ -597,8 +644,6 @@ server <- function(input, output, session) {
       group_by(ID) %>%
       summarise(dig_span = max(parse_number(rounds))+1)
     user_data_dig_span <- left_join(user_data_temp, digit_span_per_ID, by = "ID")
-    
-    print(user_data_dig_span)
     
     theme_include <- theme_bw() +
       theme(
@@ -807,10 +852,10 @@ server <- function(input, output, session) {
           y = "Mean Time Diff btw Clicks"
         ) +
         theme_include +
-        scale_x_discrete(labels = setNames(c("Below 10","10-19","20-29", "30-39", "40-49", "50-59", "60-69", "Above 70"), c(1, 2, 3, 4, 5, 6, 7, 8))) +
+        scale_x_discrete(labels = setNames(c("School-High School", "Undergraduate", "Graduate-Post Graduate"), c(1, 2, 3))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(educat, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsGender<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -831,7 +876,7 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Male", "Female"), c(0, 1))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(sex, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsJob<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -852,7 +897,7 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Academia", "Industry, Bussiness or Other"), c(1, 2))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(job, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsAcad<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -873,7 +918,7 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Below Average", "Average", "Above Average"), c(1, 2, 3))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(academic, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsMaths<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -894,7 +939,7 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Yes", "No"), c(1, 0))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(maths, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsMusic<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -915,7 +960,7 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Yes", "No"), c(1, 0))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(music, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
     output$MeanTimevsEnv<- renderPlot({
       user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
@@ -936,8 +981,129 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Silent or Normal", "Noisy or Very Noisy"), c(1, 2))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(env, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
-    })
+    }, res = 96)
     
+    output$DSPvsAgevsEducat <- renderPlot({
+      user_data_dig_span %>%
+        mutate(educat = as.factor(ifelse(educat < 2, 1, ifelse(educat == 2, 2, 3)))) %>%
+        group_by(age, educat) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = educat), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "right") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("School-High School", "Undergraduate", "Graduate-Post Graduate"), c(1, 2, 3)))
+    }, res = 96)
+    
+    output$DSPvsAgevsGender <- renderPlot({
+      user_data_dig_span %>%
+        mutate(sex = factor(sex)) %>%
+        group_by(age, sex) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = sex), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "right") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Male", "Female"), c(0, 1)))
+    }, res = 96)
+    
+    output$DSPvsAgevsJob <- renderPlot({
+      user_data_dig_span %>%
+        mutate(job = as.factor(ifelse(job == 0, 1, 2))) %>%
+        group_by(age, job) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = job), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score",
+          color = "Profession"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "bottom") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Academia", "Industry, Bussiness or Other"), c(1, 2)))
+    }, res = 96)
+    
+    output$DSPvsAgevsAcad <- renderPlot({
+      user_data_dig_span %>%
+        mutate(academic = as.factor(ifelse(academic <= 2, 1, ifelse(academic >= 4, 3, 2)))) %>%
+        group_by(age, academic) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = academic), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "right") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Below Average", "Average", "Above Average"), c(1, 2, 3)))
+    }, res = 96)
+    
+    output$DSPvsAgevsMaths <- renderPlot({
+      user_data_dig_span %>%
+        mutate(maths = as.factor(maths)) %>%
+        group_by(age, maths) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = maths), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score",
+          color = "Have Maths?"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "right") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Yes", "No"), c(1, 0)))
+    }, res = 96)
+    
+    output$DSPvsAgevsMusic <- renderPlot({
+      user_data_dig_span %>%
+        mutate(music = as.factor(music)) %>%
+        group_by(age, music) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = music), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score",
+          color = "Play Musical Instrument?"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "right") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Yes", "No"), c(1, 0)))
+    }, res = 96)
+    
+    output$DSPvsAgevsEnv <- renderPlot({
+      user_data_dig_span %>%
+        mutate(env = as.factor(ifelse(env <= 1, 1, 2))) %>%
+        group_by(age, env) %>%
+        summarise(mean_dig_span = mean(dig_span)) %>%
+        ggplot() +
+        geom_line(aes(age, mean_dig_span, color = env), size = 2) +
+        labs(
+          x = "Age",
+          y = "Average Digit Span Score"
+        ) +
+        theme_bw() +
+        theme_include + 
+        theme(legend.position = "bottom") +
+        scale_color_viridis(discrete = TRUE, labels = setNames(c("Silent or Normal", "Noisy or Very Noisy"), c(1, 2)))
+    }, res = 96)
   }
   
   observeEvent(input$entireTestRes, {
@@ -965,7 +1131,6 @@ server <- function(input, output, session) {
   curr_user <- reactiveVal(curr_user_data)
   
   observeEvent(input$start, {
-    print(".")
     if (filled_once()) { return() }
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
@@ -1005,7 +1170,6 @@ server <- function(input, output, session) {
     active(1)
     dig_seq(sample(0:9, no_of_digs(), replace = FALSE))
     #all_dig_seq()[round_num()] <- dig_seq()
-    message(dig_seq())
     
     last_ID <<- 0
     append_to_prev <<- FALSE
@@ -1048,7 +1212,7 @@ server <- function(input, output, session) {
   
   #---------- Displaying Random Numbers and Diabling and enabling DigitPad
   observe({
-    invalidateLater(2000, session)
+    invalidateLater(1500, session)
     isolate({
       waitress <- Waitress$new(max = no_of_digs(), theme = "line")
       if (active() <= no_of_digs()) {
@@ -1078,7 +1242,6 @@ server <- function(input, output, session) {
   # ---- Captures digit sequence
   write_dig_seq <- function(seq_dig) { # Write a digit sequence passed as arg to the current position in the user_dig_seq table
     user_dig_seq_temp <- user_dig_seq()
-    print(user_dig_seq_temp)
     user_dig_seq_temp[(wrong_times()+1), (no_of_digs()-1)] <- paste(seq_dig, collapse = "")
     user_dig_seq(user_dig_seq_temp)
     if (!last_try()) {
@@ -1124,8 +1287,6 @@ server <- function(input, output, session) {
       } else {
         dig_seq(sample(0:9, no_of_digs(), replace = TRUE))
       }
-      
-      message(dig_seq())
     }
   }
   
@@ -1170,12 +1331,8 @@ server <- function(input, output, session) {
       full_join(user_restart_wrong()) %>%
       mutate(rounds = paste("Round", parse_number(rounds)))
     
-    print(roundsdata)
-    
     roundstimedata <- roundstimedata %>%
       mutate(rounds = paste("Round", parse_number(rounds)))
-    
-    print(roundstimedata)
     
     output$roundwisedata <- renderUI({
       tabs <- map(
@@ -1197,30 +1354,25 @@ server <- function(input, output, session) {
     map(
       1:nrow(roundstimedata),
       function(k) {
-        print(paste("Round---", k))
         output[[paste0("Sequence", k)]] <- renderInfoBox({
           round_dig_seq <- roundsdata %>%
             filter(rounds == paste("Round", k))
           round_dig_seq <- unique(round_dig_seq$dig_seq)
-          print(paste(round_dig_seq, collapse = "\n"))
           infoBox("Sequence", paste(round_dig_seq, collapse = ", "), icon = icon("list"), color = "green")
         })
         output[[paste0("Mistakes",k)]] <- renderInfoBox({
           round_mistakes <- user_restart_wrong() %>%
             filter((rounds == paste0("r", k)) & (variable == "n_wrongs"))
           round_mistakes <- round_mistakes$n_times
-          print(round_mistakes)
           infoBox("Mistakes", round_mistakes, icon = icon("times"), color = "red")
         })
         output[[paste0("Time",k)]] <- renderInfoBox({
-          print(roundstimedata$time_taken[k])
           infoBox("Time", paste(round(roundstimedata$time_taken[k], 2), "secs"), icon = icon("clock"), color = "olive")
         })
         output[[paste0("Restarts",k)]] <- renderInfoBox({
           round_restarts <- user_restart_wrong() %>%
             filter((rounds == paste0("r", k)) & (variable == "n_restarts"))
           round_restarts <- round_restarts$n_times
-          print(round_restarts)
           infoBox("Restarts", round_restarts, icon = icon("sync"), color = "maroon")
         })
       }
@@ -1277,7 +1429,6 @@ server <- function(input, output, session) {
       summarise(mean_time_diff = mean(time_diff))
     
     user_data_time <- full_join(full_join(user_data_temp, avg_time_per_round_per_ID, by = "ID"), user_data_dig_span)
-    print(user_data_time, n = 100)
     
     user_data_time <- user_data_time %>%
       select(-ranking) %>%
@@ -1410,8 +1561,6 @@ server <- function(input, output, session) {
   
   #--- Handling User DigitPad Input after showing a Number
   check_dig_inp <- function(id, val) {
-    message("----")
-    message(dig_seq())
     observe({
       isolate({
         waitress <- Waitress$new(selector = "#display_digit", theme = "overlay-opacity",min = 0, max = no_of_digs())
@@ -1433,7 +1582,6 @@ server <- function(input, output, session) {
                 waitress$close()
                 all_correct()
               }
-              message("correct")
             } else {
               curr_time <- Sys.time()
               if (no_of_digs() > 2) {
@@ -1442,7 +1590,6 @@ server <- function(input, output, session) {
                 user_digit_click_time(temp)
                 prev_hit_time(curr_time)
               }
-              message("wrong")
               last_try(FALSE)
               if (no_of_digs() > 2) {
                 write_dig_seq(dig_seq())
