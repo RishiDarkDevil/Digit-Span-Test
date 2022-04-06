@@ -150,6 +150,7 @@ IntroUI <- tabPanelBody(
       h2("Psychological Test for testing short term memory capacity", align = "center"),
       h3("Rules:"),
       tags$div(tags$ul(
+        tags$li(tags$span("Fill in the Details about 'YOUR INFO' on Left Side and Click 'Take Test' to begin", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 1 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("The Digit Pad will be disabled when number display is in progress.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("A thin progress bar showing how much number is displayed is visible on top of the screen throughout this process.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
