@@ -430,3 +430,184 @@ user_data_dig_time %>%
   ) +
   scale_x_discrete(labels = setNames(c("Below 10","10-19","20-29", "30-39", "40-49", "50-59", "60-69", "Above 70"), c(1, 2, 3, 4, 5, 6, 7, 8))) +
   scale_fill_viridis(discrete = TRUE)
+
+
+# Age, Digit Span, Gender 
+user_data_dig_span %>%
+  mutate(sex = factor(sex)) %>%
+  group_by(age, sex) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = sex), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Male", "Female"), c(0, 1)))
+
+# Age, Digit Span, Education 
+user_data_dig_span %>%
+  mutate(educat = as.factor(ifelse(educat < 2, 1, ifelse(educat == 2, 2, 3)))) %>%
+  group_by(age, educat) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = educat), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank(),
+    legend.position = "none"
+  ) +
+  theme(legend.position = "bottom") +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("School-High School", "Undergraduate", "Graduate-Post Graduate"), c(1, 2, 3)))
+
+# Age, Digit Span, Academic Performance 
+user_data_dig_span %>%
+  mutate(academic = as.factor(ifelse(academic <= 2, 1, ifelse(academic >= 4, 3, 2)))) %>%
+  group_by(age, academic) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = academic), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Below Average", "Average", "Above Average"), c(1, 2, 3)))
+
+# Age, Digit Span, Maths
+user_data_dig_span %>%
+  mutate(maths = as.factor(maths)) %>%
+  group_by(age, maths) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = maths), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score",
+    color = "Have Maths?"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Yes", "No"), c(1, 0)))
+
+# Age, Digit Span, Music
+user_data_dig_span %>%
+  mutate(music = as.factor(music)) %>%
+  group_by(age, music) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = music), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score",
+    color = "Play Musical Instrument?"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Yes", "No"), c(1, 0)))
+
+# Age, Digit Span, Job
+user_data_dig_span %>%
+  mutate(job = as.factor(ifelse(job == 0, 1, 2))) %>%
+  group_by(age, job) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = job), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score",
+    color = "Profession"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Academia", "Industry, Bussiness or Other"), c(1, 2)))
+
+# Age, Digit Span, Env
+user_data_dig_span %>%
+  mutate(env = as.factor(ifelse(env <= 1, 1, 2))) %>%
+  group_by(age, env) %>%
+  summarise(mean_dig_span = mean(dig_span)) %>%
+  ggplot() +
+  geom_line(aes(age, mean_dig_span, color = env), size = 2) +
+  labs(
+    x = "Age",
+    y = "Average Digit Span Score"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank()
+  ) +
+  scale_color_viridis(discrete = TRUE, labels = setNames(c("Silent or Normal", "Noisy or Very Noisy"), c(1, 2)))
+
+# Mean Click Time vs DSP
+user_data_dig_time <- full_join(user_digit_click_time, user_data_dig_span)
+user_data_dig_time
+
+user_data_dig_time <- user_data_dig_time %>%
+  mutate(dig_span = dig_span) %>%
+  group_by(dig_span) %>%
+  summarise(mean_time_diff = mean(time_diff))
+user_data_dig_time
+
+user_data_dig_time %>%
+  ungroup() %>%
+  ggplot() +
+  geom_line(aes(mean_time_diff, dig_span)) +
+  labs(
+    x = "Mean Click Time",
+    y = "Digit Span"
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    strip.background = element_blank(),
+    legend.position = "none"
+  )
