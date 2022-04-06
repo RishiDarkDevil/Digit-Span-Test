@@ -403,6 +403,14 @@ EntireTestResultsUI <- tabPanelBody(
   )
 )
 
+modal_entiretest_tab <- modalDialog(
+  "No Pre-Collected Data Found",
+  title = "Error!",
+  footer = tagList(
+    actionButton("nopredata", "GO BACK TO HOME", class = "btn btn-danger")
+  )
+)
+
 # ------------------------- Intro UI
 IntroUI <- tabPanelBody(
   "introPanel",
@@ -415,7 +423,7 @@ IntroUI <- tabPanelBody(
       fluidRow(
         column(
           width = 10,
-          h3("Rules:")
+          h3("Rules(Read all or atleast the highlighted ones carefully):", style = "font-weight: bold")
         ),
         column(
           width = 2,
@@ -438,6 +446,7 @@ IntroUI <- tabPanelBody(
         tags$li(tags$span("Even if you feel you have exhausted one mistake in the round and you don't remember the retry digit sequence properly, guess as much as you remember", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Only after you reach the maximum round i.e. commit two mistakes in a round, you will be get access to 'Your Performance' assessment tab", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("'Your Performance' tab has comparison info with all the other test takers and visualizations regarding your performance", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("No Interface element except Digit Pad can be used once the test starts.", style = "font-size:18px font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Ranking is decided first based on Digit Span Score(i.e. (max number of rounds)-1) then ties are broken based on the total time taken and average time difference between clicks", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("First Round is Trial", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;")))
     )
@@ -526,10 +535,12 @@ ui <- dashboardPage(
     tags$li(
       class = "dropdown",
           actionButton("theory", "Concepts & Background"),
+          bsTooltip("theory", "Gives Detailed information about the Digit Span Test and Memory Model."),
           actionButton("entireTestRes", "Data Collection Results"),
-          actionButton("home", "Home")
-
-      )
+          bsTooltip("entireTestRes", "Gives Visualization and Inference about already collected data."),
+          actionButton("home", "Home"),
+          bsTooltip("home", "Goes to Home Screen where all the rules are listed")
+      ),
     ),
   dashboardSidebar(
     tags$style(HTML(".main-sidebar{width: 15%;}")),
@@ -562,12 +573,16 @@ server <- function(input, output, session) {
   
   #------------- Deals with Theory
   observeEvent(input$theory, {
-    updateTabsetPanel(inputId = "main", selected = "theoryPanel")
+    if (input$main != "testPanel") {
+      updateTabsetPanel(inputId = "main", selected = "theoryPanel")
+    }
   })
   
   #------------- Deals with Test Home Screen
   observeEvent(input$home, {
-    updateTabsetPanel(inputId = "main", selected = "introPanel")
+    if (input$main != "testPanel") {
+      updateTabsetPanel(inputId = "main", selected = "introPanel")
+    }
   })
   
   #------------- Deals with Entire Test Results Screen
@@ -925,13 +940,18 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$entireTestRes, {
-    updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
-    if(file.exists("user_data.csv")){
-      EntireTestResultsSetup()
-    } else {
-      
+    if (input$main != "testPanel") {
+      updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
+      if(file.exists("user_data.csv")){
+        EntireTestResultsSetup()
+      } else {
+        showModal(modal_entiretest_tab)
+      }
     }
-    
+  })
+  
+  observeEvent(input$nopredata, {
+    updateTabsetPanel(inputId = "main", selected = "introPanel")
   })
   
   # Last ID
