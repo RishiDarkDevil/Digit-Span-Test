@@ -104,6 +104,39 @@ DSTDescTabUI <- tabPanel(
   p(
     "One of the earliest measures of STM was digit span, the longest sequence of numbers that can be immediately repeated back in the correct order. People vary in their span, but it is usually around seven digits or five random letters.",
     style = "font-size: 150%"
+  ),
+  br(),
+  h3("Types of Digit Span Test", style = "font-weight: bold"),
+  p("- Forward Digit Span Test:", style = "font-size:150%; font-weight:bold"),
+  p("Here the subject is required to repeat the presented digit sequence in the given order", style = "font-size:150%"),
+  p("- Backward Digit Span Test:", style = "font-size:150%; font-weight:bold"),
+  p("It is an effective method in finding out the Short Term Memory capacity of subjects and the findings are reliable.", style = "font-size:150%")
+)
+
+DSTAdvTabUI <- tabPanel(
+  "Advantages of Digit Span Test",
+  value = "DSTAdv",
+  h1("Advantages of Digit Span Test", align = "center", style = "font-weight: bold"),
+  tags$div(tags$ul(
+    tags$li(p("It is very simple test and doesn't require any special setup apart from a silent environment and test subject.", style = "font-size:150%")),
+    tags$li(p("It serves as a part of assessing the IQ of the subjects. Higher values indicate higher remembering capacity.", style = "font-size:150%")),
+    tags$li(p("It is an effective method in finding out the Short Term Memory capacity of subjects and the findings are reliable.", style = "font-size:150%")),
+    tags$li(p("Computer and mobile versions of the test eliminate examiner differences and increase the inter-rater reliability.", style = "font-size:150%")),
+    tags$li(p("The digit sequence shows a superiority effect when compared to any non-digit span, and the Digit Span test is a preferred method to measure one’s cognitive functioning.", style = "font-size:150%")),
+    )
+  )
+)
+
+DSTDisAdvTabUI <- tabPanel(
+  "Disadvantages of Digit Span Test",
+  value = "DSTDisAdv",
+  h1("Disadvantages of Digit Span Test", align = "center", style = "font-weight: bold"),
+  tags$div(tags$ul(
+    tags$li(p("It is criticised for being artificial in nature.", style = "font-size:150%")),
+    tags$li(p("This experiment is not the representative for the kinds of STM we do in everyday life.", style = "font-size:150%")),
+    tags$li(p("It is an effective method in finding out the Short Term Memory capacity of subjects and the findings are reliable.", style = "font-size:150%")),
+    tags$li(p("It lacks temporal validity i.e. findings may not generalize to modern times as it was devised almost a century ago.", style = "font-size:150%")),
+  )
   )
 )
 
@@ -117,10 +150,13 @@ DetailsNavListUI <- navlistPanel(
   LTMDescTabUI,
   "Digit Span Test",
   DSTDescTabUI,
+  DSTAdvTabUI,
+  DSTDisAdvTabUI
   
 )
 
 ui <- fluidPage(
+  useShinydashboard(),
   DetailsNavListUI
 )
 
