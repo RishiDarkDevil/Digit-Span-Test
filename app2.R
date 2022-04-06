@@ -48,19 +48,19 @@ UserDataUI <- fluidPage(
   
   radioButtons("sex", "Gender", choiceNames = c("Male", "Female"), choiceValues = c(0, 1)),
   
-  selectInput("educat", "Education Qualification", choices = educat_choices),
+  selectInput("educat", "Education Qualification", choices = educat_choices, selected = 2),
   bsTooltip("educat", "Select the one you are currently pursuing. If not in Academia, select the one last completed."),
   
-  selectInput("job", "Current Profession", choices = job_choices, selected = NULL),
+  selectInput("job", "Current Profession", choices = job_choices, selected = 0),
   bsTooltip("job", "Select Academia if you are Student/Professor/Teacher/Researcher"),
   
   sliderInput("academic", "Your Academic Performance", value = 3, min = 1, max = 5),
   bsTooltip("academic", "1 indicating bad and 5 indicating excellent"),
   
-  radioButtons("maths", "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
+  radioButtons("maths", "Are you constantly in touch with Mathematics?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0), selected = 1),
   bsTooltip("maths", "Select yes, if your work or study heavily uses Mathematics"),
   
-  radioButtons("music", "Do you regularly play any Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0)),
+  radioButtons("music", "Do you regularly play any Musical Intrument?", choiceNames = c("Yes", "No"), choiceValues = c(1, 0), selected = 0),
   
   selectInput("env", "Current Environment", choices = env_choices),
   bsTooltip("env", "Right now, what environment are you in?"),
@@ -130,7 +130,6 @@ wrong_input <- function(id, retry = TRUE) {
     updateActionButton(inputId = "next_correct", icon = icon("redo"))
   } else {
     updateActionButton(inputId = "next_correct", icon = icon("flag-checkered"))
-    updateActionButton(inputId = "restart", icon = icon("chart-line"))
   }
 }
 
@@ -320,80 +319,89 @@ EntireTestResultsUI <- tabPanelBody(
     useShinydashboard(),
     h1("Test Results", align = "center", style = "font-weight: bold"),
     fluidRow(
-      box(
-        title = "Digit Span Score Distribution", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPDist")
+      column(
+        width = 1
       ),
-      box(
-        title = "Digit Span Score vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsAge")
-      ),
-      box(
-        title = "Digit Span Score vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsEducat")
-      ),
-      box(
-        title = "Digit Span Score vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsGender")
-      ),
-      box(
-        title = "Digit Span Score vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsJob")
-      ),
-      box(
-        title = "Digit Span Score vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsAcad")
-      ),
-      box(
-        title = "Digit Span Score vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsMaths")
-      ),
-      box(
-        title = "Digit Span Score vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsMusic")
-      ),
-      box(
-        title = "Digit Span Score vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("DSPvsEnv")
-      )
-    ),
-    fluidRow(
-      box(
-        title = "Mean Click Time Difference vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsAge")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsEducat")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsGender")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsJob")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsAcad")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsMaths")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsMusic")
-      ),
-      box(
-        title = "Mean Click Time Difference vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
-        plotOutput("MeanTimevsEnv")
+      column(
+        width = 11,
+        fluidRow(
+          
+          width = 11,
+          box(
+            title = "Digit Span Score Distribution", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPDist")
+          ),
+          box(
+            title = "Digit Span Score vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAge")
+          ),
+          box(
+            title = "Digit Span Score vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsEducat")
+          ),
+          box(
+            title = "Digit Span Score vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsGender")
+          ),
+          box(
+            title = "Digit Span Score vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsJob")
+          ),
+          box(
+            title = "Digit Span Score vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsAcad")
+          ),
+          box(
+            title = "Digit Span Score vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsMaths")
+          ),
+          box(
+            title = "Digit Span Score vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsMusic")
+          ),
+          box(
+            title = "Digit Span Score vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsEnv")
+          )
+        ),
+        fluidRow(
+          box(
+            title = "Mean Click Time Difference vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsAge")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsEducat")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsGender")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsJob")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsAcad")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsMaths")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsMusic")
+          ),
+          box(
+            title = "Mean Click Time Difference vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("MeanTimevsEnv")
+          )
+        )
       )
     )
   )
 )
-
 
 # ------------------------- Intro UI
 IntroUI <- tabPanelBody(
@@ -415,14 +423,17 @@ IntroUI <- tabPanelBody(
         )
       ),
       tags$div(tags$ul(
-        tags$li(tags$span("Fill in the Details about 'YOUR INFO' on Left Side and Click 'Take Test' to begin", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
-        tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 1 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Fill in the Details about 'YOUR INFO' on Left Side and Click 'Take Test' to begin.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 2 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("The Digit Pad will be disabled when number display is in progress.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("A thin progress bar showing how much number is displayed is visible on top of the screen throughout this process.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("The random number sequence to be remembered will increase by 1 after each successful completion of round.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
-        tags$li(tags$span("After all numbers are displayed 'GO' will be visible and Digit Pad is enabled. You can now start guessing the number in the correct order.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("After all numbers are displayed 'GO' will be visible and Digit Pad is enabled. You can now start guessing the number in the correct order(Since, it is Forward Digit Span).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("One Restart per round is available, which can be used only if no guess attempt(right or wrong) is made.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("One chance for Mistake is available per round i.e. if you get a guess wrong then upon clicking the retry button another number sequence of same length will be displayed and you need to guess that.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Click on the Right Arrow Button after a successful guess to move to the next round. ", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("As you guess a progress bar will indicate how much you guessed correctly.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("On successful guess restart button turns into a correct symbol and upon wrong guess turns into a cross symbol.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Continue till the maximum number of rounds you can go.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Even if you feel you have exhausted one mistake in the round and you don't remember the retry digit sequence properly, guess as much as you remember", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
         tags$li(tags$span("Only after you reach the maximum round i.e. commit two mistakes in a round, you will be get access to 'Your Performance' assessment tab", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
@@ -500,14 +511,26 @@ ResultUI <- tabPanelBody(
     )
 )
 
+modal_performance_tab <- modalDialog(
+  "Your digit span data captured. Click below to view performance assessment",
+  title = "Test Complete",
+  footer = tagList(
+    actionButton("performance", "View Performance Assessment", class = "btn btn-success")
+  )
+)
+
 #-------------------------------------------------- Main UI
 ui <- dashboardPage(
   dashboardHeader(
     title = "DIGIT SPAN TEST", titleWidth = "15%",
-    tags$li(class = "dropdown", actionButton("theory", "Concepts & Background")),
-    tags$li(class = "dropdown", actionButton("entireTestRes", "Data Collection Results")),
-    tags$li(class = "dropdown", actionButton("home", "Home"))
-  ),
+    tags$li(
+      class = "dropdown",
+          actionButton("theory", "Concepts & Background"),
+          actionButton("entireTestRes", "Data Collection Results"),
+          actionButton("home", "Home")
+
+      )
+    ),
   dashboardSidebar(
     tags$style(HTML(".main-sidebar{width: 15%;}")),
     UserDataUI
@@ -533,6 +556,10 @@ ui <- dashboardPage(
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
   
+  showNotification("Concepts & Background Button provides preliminary information for this test and memory model.", duration = NULL, type = "message")
+  showNotification("Data Collection Result Button provides insight to already collected data.", duration = NULL, type = "message")
+  showNotification("Home brings you back to the starting page with all the rules.", duration = NULL, type = "message")
+  
   #------------- Deals with Theory
   observeEvent(input$theory, {
     updateTabsetPanel(inputId = "main", selected = "theoryPanel")
@@ -544,9 +571,7 @@ server <- function(input, output, session) {
   })
   
   #------------- Deals with Entire Test Results Screen
-  observeEvent(input$entireTestResults, {
-    updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
-    
+  EntireTestResultsSetup <- function() {
     user_data_temp <- read_csv("user_data.csv")
     user_dig_seq_temp <- read_csv("user_dig_seq.csv")
     user_restart_wrong_temp <- read_csv("user_restart_wrong.csv")
@@ -555,7 +580,9 @@ server <- function(input, output, session) {
     digit_span_per_ID <- user_dig_seq_temp %>%
       group_by(ID) %>%
       summarise(dig_span = max(parse_number(rounds))+1)
-    user_data_dig_span <- left_join(user_data, digit_span_per_ID, by = "ID")
+    user_data_dig_span <- left_join(user_data_temp, digit_span_per_ID, by = "ID")
+    
+    print(user_data_dig_span)
     
     theme_include <- theme_bw() +
       theme(
@@ -894,6 +921,16 @@ server <- function(input, output, session) {
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(env, mean_time_diff, label=paste("mean=",round(mean_time_diff, 2),",sd=",round(std_time_diff, 2))), position=position_dodge(width=0.9), vjust=-0.25)
     })
+    
+  }
+  
+  observeEvent(input$entireTestRes, {
+    updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
+    if(file.exists("user_data.csv")){
+      EntireTestResultsSetup()
+    } else {
+      
+    }
     
   })
   
@@ -1341,10 +1378,13 @@ server <- function(input, output, session) {
         showNotification("Can restart only if no guess is made!", type = "error")
       }
     }
-    if (wrong_times() > 1) {
-      updateTabsetPanel(inputId = "main", selected = "perfPanel")
-      performancePanelSetup()
-    }
+  })
+  
+  observeEvent(input$performance, {
+    updateTabsetPanel(inputId = "main", selected = "perfPanel")
+    performancePanelSetup()
+    removeModal()
+    
   })
   
   #--- Handling User DigitPad Input after showing a Number
@@ -1396,6 +1436,8 @@ server <- function(input, output, session) {
                 showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "message")
               } else {
                 wrong_input(id, FALSE)
+                
+                showModal(modal_performance_tab)
                 
                 # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
                 write_csv(curr_user(), "user_data.csv", append = append_to_prev)
