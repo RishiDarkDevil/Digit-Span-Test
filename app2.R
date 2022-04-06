@@ -2,6 +2,8 @@ library(shiny)
 library(shinyBS)
 library(shinyjs)
 library(shinyFeedback)
+library(shinydashboard)
+library(shinyWidgets)
 library(waiter)
 library(tidyverse)
 library(lubridate)
@@ -140,10 +142,31 @@ all_correct <- function() {
 # ------------------------- Intro UI
 IntroUI <- tabPanelBody(
   "introPanel",
-  h1("Digit Span Test", align = "center", style = "font-weight: bold"),
-  h2("Psychological Test for testing short term memory capacity", align = "center")
-  
+  fluidRow(
+    column(width = 1),
+    column(
+      width = 11,
+      h1("Digit Span Test", align = "center", style = "font-weight: bold"),
+      h2("Psychological Test for testing short term memory capacity", align = "center"),
+      h3("Rules:"),
+      tags$div(tags$ul(
+        tags$li(tags$span("Numbers will be displayed one at a time(at equal intervals of 1 sec).", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("The Digit Pad will be disabled when number display is in progress.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("A thin progress bar showing how much number is displayed is visible on top of the screen throughout this process.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("The random number sequence to be remembered will increase by 1 after each successful completion of round.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("After all numbers are displayed 'GO' will be visible and Digit Pad is enabled. You can now start guessing the number in the correct order.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("One Restart per round is available, which can be used only if no guess attempt(right or wrong) is made.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("One chance for Mistake is available per round i.e. if you get a guess wrong then upon clicking the retry button another number sequence of same length will be displayed and you need to guess that.", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Continue till the maximum number of rounds you can go.", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Even if you feel you have exhausted one mistake in the round and you don't remember the retry digit sequence properly, guess as much as you remember", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Only after you reach the maximum round i.e. commit two mistakes in a round, you will be get access to 'Your Performance' assessment tab", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("'Your Performance' tab has comparison info with all the other test takers and visualizations regarding your performance", style = "font-size:18px"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("Ranking is decided first based on Digit Span Score(i.e. (max number of rounds)-1) then ties are broken based on the total time taken and average time difference between clicks", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;"),
+        tags$li(tags$span("First Round is Trial", style = "font-size:18px; font-weight: bold"), style = "font-size: 36px; list-style-type: square;")))
+    )
+  )
 )
+
 
 
 
@@ -268,18 +291,20 @@ server <- function(input, output, session) {
     }
     output$start_ok <- renderText("Successfully Recorded.")
     
+    
+    
     Sys.sleep(0.5)
     
     waiter <- Waiter$new(
       html = tagList(
         spin_fading_circles(),
-        "First One is a Trial..."
+        "Get Ready.. First One is a Trial..."
       )
     )
     waiter$show()
     on.exit(waiter$hide())
     
-    Sys.sleep(3)
+    Sys.sleep(4)
     
     updateTabsetPanel(inputId = "main", selected = "testPanel")
     
@@ -414,6 +439,10 @@ server <- function(input, output, session) {
     if ((((traverse()-1) == no_of_digs()) | (!last_try())) & (wrong_times() <= 1)) {
       next_round()
       restart_times(0)
+    } else {
+      if ((traverse()-1) < no_of_digs()) {
+        showNotification("Can't Skip a Round!", type = "error")
+      }
     }
   })
   
@@ -421,16 +450,16 @@ server <- function(input, output, session) {
   performancePanelSetup <- function(){
     
     output$DSPScore <- renderValueBox({
-      valueBox((no_of_digs()-1), "Digit Span Score", icon = icon("trophy"))
+      valueBox((no_of_digs()-1), "Digit Span Score", icon = icon("trophy"), color = "teal")
     })
     output$TotalTime <- renderValueBox({
-      valueBox(round(net_tot_time(), 2), "Total Time Taken", icon = icon("clock"))
+      valueBox(round(net_tot_time(), 2), "Total Time Taken", icon = icon("clock"), color = "olive")
     })
     output$TotalMistakes <- renderValueBox({
-      valueBox(net_mistakes(), "Mistakes", icon = icon("times"))
+      valueBox(net_mistakes(), "Mistakes", icon = icon("times"), color = "red")
     })
     output$TotalRestarts <- renderValueBox({
-      valueBox(net_restarts(), "Restarts", icon = icon("sync"))
+      valueBox(net_restarts(), "Restarts", icon = icon("sync"), color = "maroon")
     })
     
     roundsdata <- tibble(
@@ -480,25 +509,25 @@ server <- function(input, output, session) {
             filter(rounds == paste("Round", k))
           round_dig_seq <- unique(round_dig_seq$dig_seq)
           print(paste(round_dig_seq, collapse = "\n"))
-          infoBox("Sequence", paste(round_dig_seq, collapse = ", "), icon = icon("list"))
+          infoBox("Sequence", paste(round_dig_seq, collapse = ", "), icon = icon("list"), color = "green")
         })
         output[[paste0("Mistakes",k)]] <- renderInfoBox({
           round_mistakes <- user_restart_wrong() %>%
             filter((rounds == paste0("r", k)) & (variable == "n_wrongs"))
           round_mistakes <- round_mistakes$n_times
           print(round_mistakes)
-          infoBox("Mistakes", round_mistakes, icon = icon("times"))
+          infoBox("Mistakes", round_mistakes, icon = icon("times"), color = "red")
         })
         output[[paste0("Time",k)]] <- renderInfoBox({
           print(roundstimedata$time_taken[k])
-          infoBox("Time", roundstimedata$time_taken[k], icon = icon("clock"))
+          infoBox("Time", round(roundstimedata$time_taken[k], 2), icon = icon("clock"), color = "olive")
         })
         output[[paste0("Restarts",k)]] <- renderInfoBox({
           round_restarts <- user_restart_wrong() %>%
             filter((rounds == paste0("r", k)) & (variable == "n_restarts"))
           round_restarts <- round_restarts$n_times
           print(round_restarts)
-          infoBox("Restarts", round_restarts, icon = icon("sync"))
+          infoBox("Restarts", round_restarts, icon = icon("sync"), color = "maroon")
         })
       }
     )
@@ -524,7 +553,7 @@ server <- function(input, output, session) {
           axis.line = element_line(colour = "black"),
           strip.background = element_blank()
         ) 
-    })
+    }, res = 96)
     
     user_data_temp <- read_csv("user_data.csv")
     user_dig_seq_temp <- read_csv("user_dig_seq.csv")
@@ -565,7 +594,7 @@ server <- function(input, output, session) {
     curr_user_rank <- user_data_time %>%
       filter(ID == (last_ID+1))
     rankpercent <- ifelse(nrow(user_data_time) == 0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
-    MeanTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    MeanTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), round(100-rankpercent)), "%")
     MeanTimeranktext <- ifelse((round(rankpercent, 2) == 0.00) | (nrow(user_data_time) == 1), "1st Place", MeanTimeranktext)
     
     # Calculating Total Time Ranking with same DSP Rank
@@ -585,7 +614,7 @@ server <- function(input, output, session) {
     curr_user_rank <- user_data_time %>%
       filter(ID == (last_ID+1))
     rankpercent <- ifelse(nrow(user_data_time)==0, 0.00, (curr_user_rank$ranking)*100 / nrow(user_data_time))
-    TotalTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    TotalTimeranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), round(100-rankpercent)), "%")
     TotalTimeranktext <- ifelse((round(rankpercent, 2) == 0.00) | (nrow(user_data_time) == 1), "1st Place", TotalTimeranktext)
     
     # Calculating Net Ranking
@@ -596,13 +625,15 @@ server <- function(input, output, session) {
     user_data_dig_span_time <- full_join(user_data_dig_span_time, user_data_dig_span)
     
     user_data_dig_span_time <- user_data_dig_span_time %>%
-      arrange(dig_span, sum_time_diff, mean_time_diff) %>%
+      group_by(dig_span) %>%
+      arrange(dig_span, sum_time_diff, mean_time_diff, .by_group = TRUE) %>%
+      ungroup() %>%
       mutate(ranking = 1:nrow(user_data_dig_span_time))
     
     curr_user_rank <- user_data_dig_span_time %>%
       filter(ID == (last_ID+1))
     rankpercent <- (nrow(user_data_dig_span_time) - curr_user_rank$ranking)*100 / nrow(user_data_dig_span_time)
-    ranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), 100-round(rankpercent, 2)), "%")
+    ranktext <- paste0(ifelse(rankpercent <= 50, "Top ", "Bottom "), ifelse(rankpercent <= 50, round(rankpercent, 2), round(100-rankpercent)), "%")
     ranktext <- ifelse(round(rankpercent, 2) == 0.00, "1st Place", ranktext)
     
     output$ResultHead <- renderText({
@@ -610,19 +641,19 @@ server <- function(input, output, session) {
     })
     
     output$DSPRank <- renderInfoBox({
-      infoBox("People with same Digit Span", DSPranktext, icon = icon("list"), fill = TRUE)
+      infoBox("People with same Digit Span", DSPranktext, icon = icon("list"), fill = TRUE, color = "teal")
     })
     
     output$MeanTimeRankWithSameDSPRank <- renderInfoBox({
-      infoBox("Mean Time Taken", MeanTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE)
+      infoBox("Mean Time Taken", MeanTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE, color = "green")
     })
     
     output$TotTimeRankWithSameDSPRank <- renderInfoBox({
-      infoBox("Total Time Taken", TotalTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE)
+      infoBox("Total Time Taken", TotalTimeranktext, "Among Same Digit Span People", icon = icon("clock"), fill = TRUE, color = "olive")
     })
     
     output$NumCompetitors <- renderInfoBox({
-      infoBox("Number of Competitors", nrow(user_data_temp), icon = icon("users"), fill = TRUE)
+      infoBox("Number of Competitors", nrow(user_data_temp), icon = icon("users"), fill = TRUE, color = "blue")
     })
     
   }
@@ -653,7 +684,7 @@ server <- function(input, output, session) {
         strip.background = element_blank()
       ) +
       ggtitle(paste("Round", parse_number(input$tabrounds)))
-  })
+  }, res = 96)
   
   #--- Restarting 
   observeEvent(input$restart, {
@@ -665,6 +696,13 @@ server <- function(input, output, session) {
       restart_times(restart_times()+1)
       if (no_of_digs() > 2){
         write_restart(restart_times())
+      }
+      showNotification("One restart used, No more restarts available in this round", type = "message")
+    } else{
+      if ((wrong_times() <= 1) & (restart_times() == 1)){
+        showNotification("Only one restart per round is allowed!", type = "error")
+      } else if ((wrong_times() <= 1) & (traverse() > 1) & ((traverse()-1) < no_of_digs()) & last_try()){
+        showNotification("Can restart only if no guess is made!", type = "error")
       }
     }
     if (wrong_times() > 1) {
@@ -719,6 +757,7 @@ server <- function(input, output, session) {
               wrong_times(wrong_times() + 1)
               if (wrong_times() <= 1) {
                 wrong_input(id)
+                showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "message")
               } else {
                 wrong_input(id, FALSE)
                 
