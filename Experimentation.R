@@ -595,12 +595,12 @@ user_data_dig_time <- user_data_dig_time %>%
 user_data_dig_time
 
 user_data_dig_time %>%
-  ungroup() %>%
+  mutate(dig_span = as.factor(dig_span)) %>%
   ggplot() +
-  geom_line(aes(mean_time_diff, dig_span)) +
+  geom_bar(aes(dig_span, mean_time_diff, fill = dig_span), stat = "identity") +
   labs(
-    x = "Mean Click Time",
-    y = "Digit Span"
+    x = "Digit Span",
+    y = "Mean Click Time"
   ) +
   theme_bw() +
   theme(
@@ -610,4 +610,5 @@ user_data_dig_time %>%
     axis.line = element_line(colour = "black"),
     strip.background = element_blank(),
     legend.position = "none"
-  )
+  ) +
+  scale_fill_viridis(discrete = TRUE)
