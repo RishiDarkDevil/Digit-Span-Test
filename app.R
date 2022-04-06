@@ -164,7 +164,8 @@ SensDescTabUI <- tabPanel(
   p(
     "Echoic memory refers to information that is registered by the auditory system. As with iconic memory, echoic memory only holds superficial aspects of sound (e.g. pitch, tempo, or rhythm) and it has a nearly limitless capacity. Echoic memory is generally have a a duration of between 1.5 and 5 seconds depending on context but has been shown to last up to 20 seconds in the absence of competing information.",
     style = "font-size: 150%"
-  )
+  ),
+  img(src='Sensory-Memory.jpg', align = "center")
 )
 
 STMDescTabUI <- tabPanel(
@@ -226,7 +227,8 @@ AtkShifTabUI <- tabPanel(
   p(
     "Two American Psychologists- Atkinson and Shiffrin suggested a three store structural model for memory. The first, called the sensory memory, where the inputs from the sensory organs is stored for a very small time in it's preliminary form before it is passed on to the next part, called short-term memory or STM. STM was assumed to be a temporary storage system that holds material just long enough for it to be processed; the capacity of this temporary store is very small. Once processing in this first store is completed, the coded material would be transferred to a more permanent store called long-term memory, or LTM. This model explained many of the memory related data so successfully that is soon became the modal model.",
     style = "font-size: 150%"
-  )
+  ),
+  img(src='Atkinson-and-Shiffrin-memory-model.png', align = "center")
 )
 
 DSTDescTabUI <- tabPanel(
@@ -361,40 +363,44 @@ EntireTestResultsUI <- tabPanelBody(
           box(
             title = "Digit Span Score vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("DSPvsEnv")
+          ),
+          box(
+            title = "Digit Span Score vs Mean Click Time", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            plotOutput("DSPvsMeanTime")
           )
         ),
         h2("Mean Click Times and Factoring Variables", align = "center", style = "font-weight: bold"),
         fluidRow(
           box(
-            title = "Mean Click Time Difference vs Age", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Age", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsAge")
           ),
           box(
-            title = "Mean Click Time Difference vs Education Level", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Education Level", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsEducat")
           ),
           box(
-            title = "Mean Click Time Difference vs Gender", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Gender", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsGender")
           ),
           box(
-            title = "Mean Click Time Difference vs Profession", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Profession", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsJob")
           ),
           box(
-            title = "Mean Click Time Difference vs Academic Performance", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Academic Performance", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsAcad")
           ),
           box(
-            title = "Mean Click Time Difference vs Maths", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Maths", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsMaths")
           ),
           box(
-            title = "Mean Click Time Difference vs Music", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Music", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsMusic")
           ),
           box(
-            title = "Mean Click Time Difference vs Environment", status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
+            title = "Mean Click Time Difference vs Environment", status = "success", solidHeader = TRUE, width = 6, collapsible = TRUE, collapsed = TRUE,
             plotOutput("MeanTimevsEnv")
           )
         ),
@@ -441,8 +447,8 @@ EntireTestResultsUI <- tabPanelBody(
             tags$li(p("Mean Click Time increases with age which can be interpreted as more time is required to retrieve the digits.", style = "font-size:150%")),
             tags$li(p("Mean Click Time decreases with increase in education level.", style = "font-size:150%")),
             tags$li(p("Mean Click Time is less for subjects who play musical instrument or are in constantly touch with Maths.", style = "font-size:150%")),
-            tags$li(p("From individual results(available if you attempt the test on your own), it is observed the time taken between clicks is more for later rounds which maybe because in general larger digit sequence takes more time to be retrieved from memory which also makes it prone to forget some of the digits.", style = "font-size:150%")
-          )
+            tags$li(p("From individual results(available if you attempt the test on your own), it is observed the time taken between clicks is more for later rounds which maybe because in general larger digit sequence takes more time to be retrieved from memory which also makes it prone to forget some of the digits.", style = "font-size:150%")),
+            tags$li(p("Higher Digit Span Subjects have slightly higher Mean Click Time i.e. on an average they can retrieve the digits even after more time has passed compared to the subjects with lower digit span.", style = "font-size:150%")))
           )
         )
       )
@@ -578,14 +584,15 @@ modal_performance_tab <- modalDialog(
 
 #-------------------------------------------------- Main UI
 ui <- dashboardPage(
+  skin = "black",
   dashboardHeader(
     title = "DIGIT SPAN TEST", titleWidth = "15%",
     tags$li(
       class = "dropdown",
           actionButton("theory", "Concepts & Background"),
           bsTooltip("theory", "Gives Detailed information about the Digit Span Test and Memory Model."),
-          actionButton("entireTestRes", "Data Collection Results"),
-          bsTooltip("entireTestRes", "Gives Visualization and Inference about already collected data."),
+          actionButton("entireTestRes", "Results and Findings"),
+          bsTooltip("entireTestRes", "Gives Visualization and Interpretation about already collected data."),
           actionButton("home", "Home"),
           bsTooltip("home", "Goes to Home Screen where all the rules are listed")
       )
@@ -616,7 +623,7 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   
   showNotification("Concepts & Background Button provides preliminary information for this test and memory model.", duration = NULL, type = "message")
-  showNotification("Data Collection Result Button provides insight to already collected data.", duration = NULL, type = "message")
+  showNotification("Results and Findings Button provides insight to already collected data.", duration = NULL, type = "message")
   showNotification("Home brings you back to the starting page with all the rules.", duration = NULL, type = "message")
   
   #------------- Deals with Theory
@@ -813,6 +820,28 @@ server <- function(input, output, session) {
         scale_x_discrete(labels = setNames(c("Silent or Normal", "Noisy or Very Noisy"), c(1, 2))) +
         scale_fill_viridis(discrete = TRUE) +
         geom_text(aes(env, mean_dig_span, label=paste("mean=",round(mean_dig_span, 2),",sd=",round(sd_dig_span, 2))), position=position_dodge(width=0.9), vjust=-0.25)
+    }, res = 96)
+    
+    output$DSPvsMeanTime <- renderPlot({
+      user_data_dig_time <- full_join(user_digit_click_time_temp, user_data_dig_span)
+      
+      user_data_dig_time <- user_data_dig_time %>%
+        mutate(dig_span = dig_span) %>%
+        group_by(dig_span) %>%
+        summarise(mean_time_diff = mean(time_diff))
+      user_data_dig_time
+      
+      user_data_dig_time %>%
+        mutate(dig_span = as.factor(dig_span)) %>%
+        ggplot() +
+        geom_bar(aes(dig_span, mean_time_diff, fill = dig_span), stat = "identity") +
+        labs(
+          x = "Digit Span",
+          y = "Mean Click Time"
+        ) +
+        theme_bw() +
+        theme_include +
+        scale_fill_viridis(discrete = TRUE)
     }, res = 96)
     
     output$MeanTimevsAge <- renderPlot({
