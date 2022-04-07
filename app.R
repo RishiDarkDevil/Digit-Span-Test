@@ -1148,6 +1148,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$nopredata, {
     updateTabsetPanel(inputId = "main", selected = "introPanel")
+    removeModal()
   })
   
   # Last ID
