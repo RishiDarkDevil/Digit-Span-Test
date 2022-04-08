@@ -66,6 +66,8 @@ job_choices <- setNames(job_choices, c("Academia", "Industry", "Business", "Not 
 env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
 
+
+
 UserDataUI <- fluidPage(
   titlePanel("YOUR INFO", "Digit Span Test"),
   
@@ -539,8 +541,23 @@ IntroUI <- tabPanelBody(
 )
 
 
+# ------------------- Detect Mobile
+mobileDetect <- function(inputId, value = 0) {
+  tagList(
+    singleton(tags$head(tags$script(src = "js/mobile.js"))),
+    tags$input(id = inputId,
+               class = "mobile-element",
+               type = "hidden")
+  )
+}
 
-
+modal_mobile <- modalDialog(
+  "The webapp is not optimized for running on smaller screens. Please try using larger screen devices and Landscape Orientation.",
+  title = "You are on Mobile!",
+  footer = tagList(
+    actionButton("mobile", "Continue", class = "btn btn-warning")
+  )
+)
 
 # ------------------------- Test UI
 TestUI <- tabPanelBody(
@@ -633,6 +650,7 @@ ui <- dashboardPage(
     UserDataUI
   ),
   dashboardBody(
+    mobileDetect('isMobile'),
     use_waiter(),
     use_waitress(),
     tabsetPanel(
@@ -653,10 +671,18 @@ ui <- dashboardPage(
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
   
-  showNotification("Concepts & Background Button provides preliminary information for this test and memory model.", duration = NULL, type = "message")
-  showNotification("Results and Findings Button provides insight to already collected data.", duration = NULL, type = "message")
-  showNotification("Home brings you back to the starting page with all the rules.", duration = NULL, type = "message")
+  showNotification("Kindly keep an eye on notifications..", duration = NULL, type = "message")
   
+  # ------------ Deals with Mobile
+  observe({
+    if (input$isMobile) {
+      showModal(modal_mobile)
+    }
+  })
+  
+  observeEvent(input$mobile, {
+    removeModal()
+  })
   #------------- Deals with Theory
   observeEvent(input$theory, {
     if (input$main != "testPanel") {
@@ -1209,7 +1235,10 @@ server <- function(input, output, session) {
   curr_user <- reactiveVal(curr_user_data)
   
   observeEvent(input$start, {
-    if (filled_once()) { return() }
+    if (filled_once()) {
+      updateTabsetPanel(inputId = "main", selected = "perfPanel")
+      return()
+    }
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
       
@@ -1631,7 +1660,19 @@ server <- function(input, output, session) {
     }
   })
   
+  # ------ Handling Modal after on Test Completion
   observeEvent(input$performance, {
+    waiter <- Waiter$new(
+      html = tagList(
+        spin_fading_circles(),
+        "Loading your performance...."
+      )
+    )
+    waiter$show()
+    on.exit(waiter$hide())
+    
+    output$start_ok <- renderText("")
+    updateActionButton(inputId = "start", label = "Your Performance")
     updateTabsetPanel(inputId = "main", selected = "perfPanel")
     performancePanelSetup()
     removeModal()
@@ -1710,75 +1751,87 @@ server <- function(input, output, session) {
                 
                 showModal(modal_performance_tab)
                 
-                # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
-                if (append_to_prev) {
-                  sheet_append(data = curr_user(), ss = user_data_id, sheet = "main")
-                } else {
-                  sheet_write(data = curr_user(), ss = user_data_id, sheet = "main")
-                }
+                withProgress(message = "Adding your data to database...", {
+                  # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
+                  if (append_to_prev) {
+                    sheet_append(data = curr_user(), ss = user_data_id, sheet = "main")
+                  } else {
+                    sheet_write(data = curr_user(), ss = user_data_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_dig_seq()
+                  temp <- temp %>%
+                    add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
+                    select(ID, everything()) %>%
+                    gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
+                    add_column(mis_ind = index_wrong) %>%
+                    filter(dig_seq != "") %>%
+                    arrange(parse_number(rounds), try)
+                  
+                  user_dig_seq(temp)
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp, ss = user_dig_seq_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp, ss = user_dig_seq_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_restart_wrong()
+                  temp <- temp %>%
+                    add_column(ID = c(last_ID+1, last_ID+1)) %>%
+                    select(ID, everything()) %>%
+                    gather(paste0("r", 1:100), key = "rounds", value = "n_times")
+                  
+                  tot_wrongs <- temp %>%
+                    filter(variable == "n_wrongs") %>%
+                    summarise(tot_wrongs = sum(n_times))
+                  net_mistakes((tot_wrongs$tot_wrongs)[1])
+                  
+                  tot_restarts <- temp %>%
+                    filter(variable == "n_restarts") %>%
+                    summarise(tot_restarts = sum(n_times))
+                  net_restarts((tot_restarts$tot_restarts)[1])
+                  
+                  user_restart_wrong(temp[1:(2*(no_of_digs()-2)),])
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_digit_click_time()
+                  temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
+                    add_column(ID = (last_ID+1)) %>%
+                    select(ID, rounds, everything()) %>%
+                    gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
+                    arrange(parse_number(rounds), try) %>%
+                    filter(time_diff != -1)
+                  net_time <- temp %>%
+                    mutate(rounds = parse_number(rounds)) %>%
+                    filter(rounds != no_of_digs()) %>%
+                    summarise(tot_time = sum(time_diff))
+                  net_time <- (net_time$tot_time)[1]
+                  net_tot_time(net_time)
+                  
+                  user_digit_click_time(temp)
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp, ss = user_digit_click_time_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp, ss = user_digit_click_time_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                })
                 
-                temp <- user_dig_seq()
-                temp <- temp %>%
-                  add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
-                  select(ID, everything()) %>%
-                  gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
-                  add_column(mis_ind = index_wrong) %>%
-                  filter(dig_seq != "") %>%
-                  arrange(parse_number(rounds), try)
                 
-                user_dig_seq(temp)
-                
-                if (append_to_prev) {
-                  sheet_append(data = temp, ss = user_dig_seq_id, sheet = "main")
-                } else {
-                  sheet_write(data = temp, ss = user_dig_seq_id, sheet = "main")
-                }
-                
-                temp <- user_restart_wrong()
-                temp <- temp %>%
-                  add_column(ID = c(last_ID+1, last_ID+1)) %>%
-                  select(ID, everything()) %>%
-                  gather(paste0("r", 1:100), key = "rounds", value = "n_times")
-                
-                tot_wrongs <- temp %>%
-                  filter(variable == "n_wrongs") %>%
-                  summarise(tot_wrongs = sum(n_times))
-                net_mistakes((tot_wrongs$tot_wrongs)[1])
-                
-                tot_restarts <- temp %>%
-                  filter(variable == "n_restarts") %>%
-                  summarise(tot_restarts = sum(n_times))
-                net_restarts((tot_restarts$tot_restarts)[1])
-                
-                user_restart_wrong(temp[1:(2*(no_of_digs()-2)),])
-                
-                if (append_to_prev) {
-                  sheet_append(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
-                } else {
-                  sheet_write(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
-                }
-                
-                temp <- user_digit_click_time()
-                temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
-                  add_column(ID = (last_ID+1)) %>%
-                  select(ID, rounds, everything()) %>%
-                  gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
-                  arrange(parse_number(rounds), try) %>%
-                  filter(time_diff != -1)
-                net_time <- temp %>%
-                  mutate(rounds = parse_number(rounds)) %>%
-                  filter(rounds != no_of_digs()) %>%
-                  summarise(tot_time = sum(time_diff))
-                net_time <- (net_time$tot_time)[1]
-                net_tot_time(net_time)
-                
-                user_digit_click_time(temp)
-                
-                if (append_to_prev) {
-                  sheet_append(data = temp, ss = user_digit_click_time_id, sheet = "main")
-                } else {
-                  sheet_write(data = temp, ss = user_digit_click_time_id, sheet = "main")
-                }
               }
             }
           }
