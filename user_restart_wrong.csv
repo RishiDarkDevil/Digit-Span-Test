@@ -181,3 +181,17 @@ ID,variable,rounds,n_times
 17,n_wrongs,r7,0
 17,n_restarts,r8,0
 17,n_wrongs,r8,2
+18,n_restarts,r1,0
+18,n_wrongs,r1,0
+18,n_restarts,r2,0
+18,n_wrongs,r2,0
+18,n_restarts,r3,0
+18,n_wrongs,r3,0
+18,n_restarts,r4,0
+18,n_wrongs,r4,0
+18,n_restarts,r5,0
+18,n_wrongs,r5,0
+18,n_restarts,r6,0
+18,n_wrongs,r6,0
+18,n_restarts,r7,1
+18,n_wrongs,r7,2
