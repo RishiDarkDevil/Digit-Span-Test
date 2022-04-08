@@ -7,6 +7,7 @@ library(shinyWidgets)
 library(waiter)
 library(tidyverse)
 library(lubridate)
+library(viridis)
 
 #----------------------------------------------------- Helpers
 
