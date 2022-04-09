@@ -105,30 +105,30 @@ UserDataUI <- fluidPage(
 DigitPadUI <- fluidPage(
   fluidRow(
     column(12, align = "center",
-           actionButton("one", "1", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("two", "2", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("three", "3", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("one", "1", style='padding-left:25px; padding-right:25px; font-size: 500%; margin: 25px'),
+           actionButton("two", "2", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("three", "3", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("four", "4", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("five", "5", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("six", "6", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("four", "4", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("five", "5", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("six", "6", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("seven", "7", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("eight", "8", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("nine", "9", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("seven", "7", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("eight", "8", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("nine", "9", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("restart", "", icon = icon("sync"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("restart", "", icon = icon("sync"), style='padding-left:25px; padding-right:25px; font-size:400%; margin: 25px'),
+           actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:400%; margin: 25px')
     )
   )
 )
@@ -163,7 +163,7 @@ wrong_input <- function(id, retry = TRUE) {
 
 all_correct <- function() {
   # updateActionButton(inputId = id, label = "O")
-  updateActionButton(inputId = "restart", icon = icon("check"))
+  updateActionButton(inputId = "next_correct", icon = icon("check"))
 }
 
 # ------------------------ Concepts and Background UI
@@ -184,7 +184,7 @@ SensDescTabUI <- tabPanel(
   br(),
   h3("Iconic Memory", style = "font-weight: bold"),
   p(
-    "Iconic memory, which is associated with the visual system, is perhaps the most researched of the sensory registers.Iconic memory is only limited to field of vision. That is, as long as a stimulus has entered the field of vision there is no limit to the amount of visual information iconic memory can hold at any one time. As noted above, sensory registers do not allow for further processing of information, and as such iconic memory only holds information for visual stimuli such as shape, size, color and location (but not semantic meaning). As the higher-level processes are limited in their capacities, not all information from sensory memory can be conveyed. It has been argued that the momentary mental freezing of visual input allows for the selection of specific aspects which should be passed on for further memory processing. The biggest limitation of iconic memory is the rapid decay of the information stored there; items in iconic memory decay after only 0.5–1.0 seconds.",
+    "Iconic memory, which is associated with the visual system, is perhaps the most researched of the sensory registers.Iconic memory is only limited to field of vision. That is, as long as a stimulus has entered the field of vision there is no limit to the amount of visual information iconic memory can hold at any one time. As noted above, sensory registers do not allow for further processing of information, and as such iconic memory only holds information for visual stimuli such as shape, size, color and location (but not semantic meaning). As the higher-level processes are limited in their capacities, not all information from sensory memory can be conveyed. It has been argued that the momentary mental freezing of visual input allows for the selection of specific aspects which should be passed on for further memory processing. The biggest limitation of iconic memory is the rapid decay of the information stored there; items in iconic memory decay after only 0.5â1.0 seconds.",
     style = "font-size: 150%"
   ),
   br(),
@@ -211,13 +211,13 @@ STMDescTabUI <- tabPanel(
   br(),
   h3("Duration", style = "font-weight: bold"),
   p(
-    "As with sensory memory, the information that enters short-term memory decays and is lost, but the information in the short-term store has a longer duration, approximately 18–20 seconds when the information is not being actively rehearsed, though it is possible that this depends on modality and could be as long as 30 seconds. Fortunately, the information can be held in the short-term store for much longer through what Atkinson and Shiffrin called rehearsal. For auditory information rehearsal can be taken in a literal sense: continually repeating the items. However, the term can be applied for any information that is attended to, such as when a visual image is intentionally held in mind. Finally, information in the short-term store does not have to be of the same modality as its sensory input. For example, written text which enters visually can be held as auditory information, and likewise auditory input can be visualized. On this model, rehearsal of information allows for it to be stored more permanently in the long-term store. Atkinson and Shiffrin discussed this at length for auditory and visual information but did not give much attention to the rehearsal/storage of other modalities due to the experimental difficulties of studying those modalities.",
+    "As with sensory memory, the information that enters short-term memory decays and is lost, but the information in the short-term store has a longer duration, approximately 18â20 seconds when the information is not being actively rehearsed, though it is possible that this depends on modality and could be as long as 30 seconds. Fortunately, the information can be held in the short-term store for much longer through what Atkinson and Shiffrin called rehearsal. For auditory information rehearsal can be taken in a literal sense: continually repeating the items. However, the term can be applied for any information that is attended to, such as when a visual image is intentionally held in mind. Finally, information in the short-term store does not have to be of the same modality as its sensory input. For example, written text which enters visually can be held as auditory information, and likewise auditory input can be visualized. On this model, rehearsal of information allows for it to be stored more permanently in the long-term store. Atkinson and Shiffrin discussed this at length for auditory and visual information but did not give much attention to the rehearsal/storage of other modalities due to the experimental difficulties of studying those modalities.",
     style = "font-size: 150%"
   ),
   br(),
   h3("Capacity", style = "font-weight: bold"),
   p(
-    "There is a limit to the amount of information that can be held in the STM: 7 ± 2 chunks. These chunks, which were noted by Miller in his seminal paper The Magical Number Seven, Plus or Minus Two, are defined as independent items of information. It is important to note that some chunks are perceived as one unit though they could be broken down into multiple items, for example '1066' can be either the series of four digits '1, 0, 6, 6' or the semantically grouped item '1066' which is the year the Battle of Hastings was fought. Chunking allows for large amounts of information to be held in memory: 149283141066 is twelve individual items, well outside the limit of the STM, but it can be grouped semantically into the 3 chunks [1492][8314][1066]. Because short-term memory is limited in capacity, it severely limits the amount of information that can be attended to at any one time.",
+    "There is a limit to the amount of information that can be held in the STM: 7 Â± 2 chunks. These chunks, which were noted by Miller in his seminal paper The Magical Number Seven, Plus or Minus Two, are defined as independent items of information. It is important to note that some chunks are perceived as one unit though they could be broken down into multiple items, for example '1066' can be either the series of four digits '1, 0, 6, 6' or the semantically grouped item '1066' which is the year the Battle of Hastings was fought. Chunking allows for large amounts of information to be held in memory: 149283141066 is twelve individual items, well outside the limit of the STM, but it can be grouped semantically into the 3 chunks [1492][8314][1066]. Because short-term memory is limited in capacity, it severely limits the amount of information that can be attended to at any one time.",
     style = "font-size: 150%"
   )
 )
@@ -227,7 +227,7 @@ LTMDescTabUI <- tabPanel(
   value = "LTMDesc",
   h1("What is Long Term Memory?", align = "center", style = "font-weight: bold"),
   p(
-    "Long-Term Memory(LTM) is is the stage of the Atkinson–Shiffrin memory model in which informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds. Long-term memory is commonly labelled as explicit memory (declarative), as well as episodic memory, semantic memory, autobiographical memory, and implicit memory.",
+    "Long-Term Memory(LTM) is is the stage of the AtkinsonâShiffrin memory model in which informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds. Long-term memory is commonly labelled as explicit memory (declarative), as well as episodic memory, semantic memory, autobiographical memory, and implicit memory.",
     style = "font-size: 150%"
   ),
   p(
@@ -292,7 +292,7 @@ DSTAdvTabUI <- tabPanel(
     tags$li(p("It serves as a part of assessing the IQ of the subjects. Higher values indicate higher remembering capacity.", style = "font-size:150%")),
     tags$li(p("It is an effective method in finding out the Short Term Memory capacity of subjects and the findings are reliable.", style = "font-size:150%")),
     tags$li(p("Computer and mobile versions of the test eliminate examiner differences and increase the inter-rater reliability.", style = "font-size:150%")),
-    tags$li(p("The digit sequence shows a superiority effect when compared to any non-digit span, and the Digit Span test is a preferred method to measure one’s cognitive functioning.", style = "font-size:150%")),
+    tags$li(p("The digit sequence shows a superiority effect when compared to any non-digit span, and the Digit Span test is a preferred method to measure oneâs cognitive functioning.", style = "font-size:150%")),
   )
   )
 )
@@ -566,11 +566,14 @@ TestUI <- tabPanelBody(
     column(width = 1),
     column(
       width = 11,
-      splitLayout(
-        cellWidths = c("60%", "40%"),
-        span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle", align = "center"),
-        DigitPadUI
+      fluidPage(
+        splitLayout(
+          cellWidths = c("50%", "50%"),
+          span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle", align = "center"),
+          DigitPadUI
+        )
       )
+      
     )
   )
 )
@@ -703,6 +706,17 @@ server <- function(input, output, session) {
     user_dig_seq_temp <- read_sheet(user_dig_seq_id, sheet = "main")
     user_restart_wrong_temp <- read_sheet(user_restart_wrong_id, sheet = "main")
     user_digit_click_time_temp <- read_sheet(user_digit_click_time_id, sheet = "main")
+    
+    sym_diff <- function(a,b) setdiff(union(a,b), intersect(a,b))
+    
+    user_data_temp <- user_data_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_dig_seq_temp <- user_dig_seq_temp %>%
+      filter(!(ID %in% setdiff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_restart_wrong_temp <- user_restart_wrong_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_restart_wrong_temp$ID)))
+    user_digit_click_time_temp <- user_digit_click_time_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_digit_click_time_temp$ID)))
     
     output$NumOfSubjects <- renderInfoBox({
       infoBox("Number of Subjects", nrow(user_data_temp), icon = icon("users"), fill = TRUE, color = "teal")
@@ -1198,19 +1212,20 @@ server <- function(input, output, session) {
   
   observeEvent(input$entireTestRes, {
     
-    waiter <- Waiter$new(
-      html = tagList(
-        spin_fading_circles(),
-        "Loading Data... Generating Plots..."
-      )
-    )
-    waiter$show()
-    on.exit(waiter$hide())
-    if (filled_once()) {
-      showNotification("Your Data is also added and used to generate plots.", type = "message")
-    }
-    
     if (input$main != "testPanel") {
+      
+      waiter <- Waiter$new(
+        html = tagList(
+          spin_fading_circles(),
+          "Loading Data... Generating Plots..."
+        )
+      )
+      waiter$show()
+      on.exit(waiter$hide())
+      if (filled_once()) {
+        showNotification("Your Data is also added and used to generate plots.", type = "message")
+      }
+      
       updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
       if(nrow(read_sheet(user_data_id, sheet = "main")) != 0){
         EntireTestResultsSetup()
@@ -1513,6 +1528,15 @@ server <- function(input, output, session) {
     user_dig_seq_temp <- read_sheet(user_dig_seq_id, sheet = "main")
     user_digit_click_time_temp <- read_sheet(user_digit_click_time_id, sheet = "main")
     
+    sym_diff <- function(a,b) setdiff(union(a,b), intersect(a,b))
+    
+    user_data_temp <- user_data_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_dig_seq_temp <- user_dig_seq_temp %>%
+      filter(!(ID %in% setdiff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_digit_click_time_temp <- user_digit_click_time_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_digit_click_time_temp$ID)))
+    
     # Calculating DSP Ranking 
     digit_span_per_ID <- user_dig_seq_temp %>%
       group_by(ID) %>%
@@ -1686,7 +1710,7 @@ server <- function(input, output, session) {
       fs <- c()
       tmpdir <- tempdir()
       setwd(tempdir())
-      fs <- c("user_data.csv", "user_dig_seq.csv", "user_restart_wrong.csv", "user_digit_click_tiem.csv")
+      fs <- c("user_data.csv", "user_dig_seq.csv", "user_restart_wrong.csv", "user_digit_click_time.csv")
       withProgress(message = "Files getting ready for download", detail = "Zipping .csv files...", {
         write_csv(read_sheet(user_data_id, sheet = "main"), file = "user_data.csv")
         incProgress(1 / 4)
