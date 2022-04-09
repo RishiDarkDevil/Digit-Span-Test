@@ -6,8 +6,8 @@ The performance of test subjects in this test is explained best by the Modal Mod
 - Long Term Memory
 
 
-The Digit Span Test is implemented here in `app.R` using R Shiny.\
-**Run**: To run the application(i.e. webApp) one needs to install the following packages which are imported by using `library()` at the starting of the `app.R` file. Further download the `www` folder and keep it in same hierarchial form as in this repository to view images in the app while running which are added in the Theoretical backing of the Modal Model and Digit Span Test.
+The Digit Span Test is implemented here in `app.R` using R Shiny. The deployable code is implemented in `app-deploy.R`\
+**Run**: You can also see the deployed version of this app at [Digit Span Test](https://rishidarkdevil.shinyapps.io/Digit-Span-Test/) or check the link in Repository's About. To run the application(i.e. webApp) locally one needs to install the following packages which are imported by using `library()` at the starting of the `app.R` file. Further download the `www` folder and keep it in same hierarchial form as in this repository to view images in the app while running which are added in the Theoretical backing of the Modal Model and Digit Span Test. `app-deploy.R` is slightly better as it contains better modal messages, progressbars, etc.
 
 **FAQ**: What are the interesting thing about this implementation?
 - It is fully autonomous, with proper use of notifications and progress bars.
