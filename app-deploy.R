@@ -19,6 +19,7 @@ options(
   gargle_oauth_cache = "DIGIT SPAN/.secrets"
 )
 
+# ------------- Uncomment the follow few lines to authenticate your google account and create the required google sheets file on your drive
 #drive_auth()
 #gs4_auth()
 
