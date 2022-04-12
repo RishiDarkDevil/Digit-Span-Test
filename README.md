@@ -15,7 +15,7 @@ The Digit Span Test is implemented here in `app.R` using R Shiny. The deployable
 - Comes with post Digit Span Test analysis which has a leaderboard to see your performance compared to others, round-wise performance analysis for each round and an overall rank.
 - Comes with relevant theory and bacground materials which explains the Digit Span Test in greater details
 - Comes with Results and Findings which displays what patterns and trends are there in already collected data in a very organised way along with their interpretations.
-- Generates 4 files `user_data.csv`, `user_dig_seq.csv`, `user_digit_click_time.csv`, `user_restart_wrong.csv` which contains all possible aspects in which data can be captured on a single subject without increasing the number of questions or making this test as a part of bigger test(e.g. WAIS IQ Test). So, it allows using these files and data in your own analysis if needed.
+- Generates 4 files `user_data.csv`, `user_dig_seq.csv`, `user_digit_click_time.csv`, `user_restart_wrong.csv`(the necessary information on how the data is stored and what data is stored is available in `files_info_readme.txt`) which contains all possible aspects in which data can be captured on a single subject without increasing the number of questions or making this test as a part of bigger test(e.g. WAIS IQ Test). So, it allows using these files and data in your own analysis if needed.
 - I record an important parameter for each subject unlike any other previously conducted such test i.e. the time taken between clicks which can be used to infer significany results between time taken to remember digits, etc.
 - Provides opportunity to host this app on a server to allow large scale collection of data.
 
