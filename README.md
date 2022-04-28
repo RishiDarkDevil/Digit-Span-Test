@@ -1,13 +1,18 @@
 # Digit Span Test
+![Homescreen of App](App-SS/Capture-1.JPG)
+![Ongoing Digit Span Test](App-SS/Capture-5.JPG)
+![Post Test Results and Ranking](App-SS/Capture-2.JPG)
 Digit Span Test deals with conducting psychological test on subjects to find out the working memory/short-term memory capacity. The test deals with simply displaying or speaking aloud numbers to each subject and giving them chance to repeat back the entire number said in correct order or reverse order. This test usually gives results with mean 7 and standard deviatiion 2. That's why 7 is many a times referred as the magic number of the human brain.\
+![Test Results of all Individuals](App-SS/Capture-3.JPG)
 The performance of test subjects in this test is explained best by the Modal Model of Memory, which assumes human memory to be divided into 3 parts, which are-
 - Sensory Memory
 - Short Term Memory
 - Long Term Memory
 
+![Background Material on the Memory Model and Digit Span Test](App-SS/Capture-4.JPG)
+I have tried establishing a connection between age and digit span score, time taken to retrieve the information from short-term memory and the size of the information.
 
-The Digit Span Test is implemented here in `app.R` using R Shiny. The deployable code is implemented in `app-deploy.R`\
-**Run**: You can also see the deployed version of this app at [Digit Span Test](https://rishidarkdevil.shinyapps.io/Digit-Span-Test/)(If I have enough hours left :P) or check the link in Repository's About. To run the application(i.e. webApp) locally one needs to install the following packages which are imported by using `library()` at the starting of the `app.R` file. Further download the `www` folder and keep it in same hierarchial form as in this repository to view images in the app while running which are added in the Theoretical backing of the Modal Model and Digit Span Test. `app-deploy.R` is slightly better as it contains better modal messages, progressbars, etc.
+**Run**: The Digit Span Test is implemented here in `app.R` using R Shiny. The deployable code is implemented in `app-deploy.R`. You can also see the deployed version of this app at [Digit Span Test](https://rishidarkdevil.shinyapps.io/Digit-Span-Test/)(If I have enough hours left :P) or check the link in Repository's About. To run the application(i.e. webApp) locally one needs to install the following packages which are imported by using `library()` at the starting of the `app.R` file. Further download the `www` folder and keep it in same hierarchial form as in this repository to view images in the app while running which are added in the Theoretical backing of the Modal Model and Digit Span Test. `app-deploy.R` is slightly better as it contains better modal messages, progressbars, etc.
 
 **FAQ**: What are the interesting thing about this implementation?
 - It is fully autonomous, with proper use of notifications and progress bars.
