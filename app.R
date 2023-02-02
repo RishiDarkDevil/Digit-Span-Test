@@ -8,6 +8,31 @@ library(waiter)
 library(tidyverse)
 library(lubridate)
 library(viridis)
+library(googledrive)
+library(googlesheets4)
+
+#----------------------------------------------------- Google Sheets 
+options(
+  # whenever there is one account token found, use the cached token
+  gargle_oauth_email = TRUE,
+  # specify auth tokens should be stored in a hidden directory ".secrets"
+  gargle_oauth_cache = "DIGIT SPAN/.secrets"
+)
+
+drive_auth()
+gs4_auth()
+
+# -------------- Creating GoogleSheets
+#gs4_create(name = "user_data", sheets = "main")
+#gs4_create(name = "user_dig_seq", sheets = "main")
+#gs4_create(name = "user_digit_click_time", sheets = "main")
+#gs4_create(name = "user_restart_wrong", sheets = "main")
+
+# -------------- Get IDs
+user_data_id <- drive_get("user_data")$id
+user_dig_seq_id <- drive_get("user_dig_seq")$id
+user_digit_click_time_id <- drive_get("user_digit_click_time")$id
+user_restart_wrong_id <- drive_get("user_restart_wrong")$id 
 
 #----------------------------------------------------- Helpers
 
@@ -40,6 +65,8 @@ job_choices <- setNames(job_choices, c("Academia", "Industry", "Business", "Not 
 
 env_choices <- c(0, 1, 2, 3)
 env_choices <- setNames(env_choices, c("Silent", "Normal", "Little Noisy", "Very Noisy"))
+
+
 
 UserDataUI <- fluidPage(
   titlePanel("YOUR INFO", "Digit Span Test"),
@@ -78,30 +105,30 @@ UserDataUI <- fluidPage(
 DigitPadUI <- fluidPage(
   fluidRow(
     column(12, align = "center",
-           actionButton("one", "1", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("two", "2", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("three", "3", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("one", "1", style='padding-left:25px; padding-right:25px; font-size: 500%; margin: 25px'),
+           actionButton("two", "2", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("three", "3", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("four", "4", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("five", "5", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("six", "6", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("four", "4", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("five", "5", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("six", "6", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("seven", "7", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("eight", "8", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("nine", "9", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("seven", "7", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("eight", "8", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("nine", "9", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px')
     )
   ),
   fluidRow(
     column(12, align = "center",
-           actionButton("restart", "", icon = icon("sync"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px'),
-           actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:700%; margin: 25px')
+           actionButton("restart", "", icon = icon("sync"), style='padding-left:25px; padding-right:25px; font-size:400%; margin: 25px'),
+           actionButton("zero", "0", style='padding-left:25px; padding-right:25px; font-size:500%; margin: 25px'),
+           actionButton("next_correct", "", icon = icon("arrow-right"), style='padding-left:25px; padding-right:25px; font-size:400%; margin: 25px')
     )
   )
 )
@@ -136,7 +163,7 @@ wrong_input <- function(id, retry = TRUE) {
 
 all_correct <- function() {
   # updateActionButton(inputId = id, label = "O")
-  updateActionButton(inputId = "restart", icon = icon("check"))
+  updateActionButton(inputId = "next_correct", icon = icon("check"))
 }
 
 # ------------------------ Concepts and Background UI
@@ -157,7 +184,7 @@ SensDescTabUI <- tabPanel(
   br(),
   h3("Iconic Memory", style = "font-weight: bold"),
   p(
-    "Iconic memory, which is associated with the visual system, is perhaps the most researched of the sensory registers.Iconic memory is only limited to field of vision. That is, as long as a stimulus has entered the field of vision there is no limit to the amount of visual information iconic memory can hold at any one time. As noted above, sensory registers do not allow for further processing of information, and as such iconic memory only holds information for visual stimuli such as shape, size, color and location (but not semantic meaning). As the higher-level processes are limited in their capacities, not all information from sensory memory can be conveyed. It has been argued that the momentary mental freezing of visual input allows for the selection of specific aspects which should be passed on for further memory processing. The biggest limitation of iconic memory is the rapid decay of the information stored there; items in iconic memory decay after only 0.5–1.0 seconds.",
+    "Iconic memory, which is associated with the visual system, is perhaps the most researched of the sensory registers.Iconic memory is only limited to field of vision. That is, as long as a stimulus has entered the field of vision there is no limit to the amount of visual information iconic memory can hold at any one time. As noted above, sensory registers do not allow for further processing of information, and as such iconic memory only holds information for visual stimuli such as shape, size, color and location (but not semantic meaning). As the higher-level processes are limited in their capacities, not all information from sensory memory can be conveyed. It has been argued that the momentary mental freezing of visual input allows for the selection of specific aspects which should be passed on for further memory processing. The biggest limitation of iconic memory is the rapid decay of the information stored there; items in iconic memory decay after only 0.5â1.0 seconds.",
     style = "font-size: 150%"
   ),
   br(),
@@ -184,13 +211,13 @@ STMDescTabUI <- tabPanel(
   br(),
   h3("Duration", style = "font-weight: bold"),
   p(
-    "As with sensory memory, the information that enters short-term memory decays and is lost, but the information in the short-term store has a longer duration, approximately 18–20 seconds when the information is not being actively rehearsed, though it is possible that this depends on modality and could be as long as 30 seconds. Fortunately, the information can be held in the short-term store for much longer through what Atkinson and Shiffrin called rehearsal. For auditory information rehearsal can be taken in a literal sense: continually repeating the items. However, the term can be applied for any information that is attended to, such as when a visual image is intentionally held in mind. Finally, information in the short-term store does not have to be of the same modality as its sensory input. For example, written text which enters visually can be held as auditory information, and likewise auditory input can be visualized. On this model, rehearsal of information allows for it to be stored more permanently in the long-term store. Atkinson and Shiffrin discussed this at length for auditory and visual information but did not give much attention to the rehearsal/storage of other modalities due to the experimental difficulties of studying those modalities.",
+    "As with sensory memory, the information that enters short-term memory decays and is lost, but the information in the short-term store has a longer duration, approximately 18â20 seconds when the information is not being actively rehearsed, though it is possible that this depends on modality and could be as long as 30 seconds. Fortunately, the information can be held in the short-term store for much longer through what Atkinson and Shiffrin called rehearsal. For auditory information rehearsal can be taken in a literal sense: continually repeating the items. However, the term can be applied for any information that is attended to, such as when a visual image is intentionally held in mind. Finally, information in the short-term store does not have to be of the same modality as its sensory input. For example, written text which enters visually can be held as auditory information, and likewise auditory input can be visualized. On this model, rehearsal of information allows for it to be stored more permanently in the long-term store. Atkinson and Shiffrin discussed this at length for auditory and visual information but did not give much attention to the rehearsal/storage of other modalities due to the experimental difficulties of studying those modalities.",
     style = "font-size: 150%"
   ),
   br(),
   h3("Capacity", style = "font-weight: bold"),
   p(
-    "There is a limit to the amount of information that can be held in the STM: 7 ± 2 chunks. These chunks, which were noted by Miller in his seminal paper The Magical Number Seven, Plus or Minus Two, are defined as independent items of information. It is important to note that some chunks are perceived as one unit though they could be broken down into multiple items, for example '1066' can be either the series of four digits '1, 0, 6, 6' or the semantically grouped item '1066' which is the year the Battle of Hastings was fought. Chunking allows for large amounts of information to be held in memory: 149283141066 is twelve individual items, well outside the limit of the STM, but it can be grouped semantically into the 3 chunks [1492][8314][1066]. Because short-term memory is limited in capacity, it severely limits the amount of information that can be attended to at any one time.",
+    "There is a limit to the amount of information that can be held in the STM: 7 Â± 2 chunks. These chunks, which were noted by Miller in his seminal paper The Magical Number Seven, Plus or Minus Two, are defined as independent items of information. It is important to note that some chunks are perceived as one unit though they could be broken down into multiple items, for example '1066' can be either the series of four digits '1, 0, 6, 6' or the semantically grouped item '1066' which is the year the Battle of Hastings was fought. Chunking allows for large amounts of information to be held in memory: 149283141066 is twelve individual items, well outside the limit of the STM, but it can be grouped semantically into the 3 chunks [1492][8314][1066]. Because short-term memory is limited in capacity, it severely limits the amount of information that can be attended to at any one time.",
     style = "font-size: 150%"
   )
 )
@@ -200,7 +227,7 @@ LTMDescTabUI <- tabPanel(
   value = "LTMDesc",
   h1("What is Long Term Memory?", align = "center", style = "font-weight: bold"),
   p(
-    "Long-Term Memory(LTM) is is the stage of the Atkinson–Shiffrin memory model in which informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds. Long-term memory is commonly labelled as explicit memory (declarative), as well as episodic memory, semantic memory, autobiographical memory, and implicit memory.",
+    "Long-Term Memory(LTM) is is the stage of the AtkinsonâShiffrin memory model in which informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds. Long-term memory is commonly labelled as explicit memory (declarative), as well as episodic memory, semantic memory, autobiographical memory, and implicit memory.",
     style = "font-size: 150%"
   ),
   p(
@@ -265,7 +292,7 @@ DSTAdvTabUI <- tabPanel(
     tags$li(p("It serves as a part of assessing the IQ of the subjects. Higher values indicate higher remembering capacity.", style = "font-size:150%")),
     tags$li(p("It is an effective method in finding out the Short Term Memory capacity of subjects and the findings are reliable.", style = "font-size:150%")),
     tags$li(p("Computer and mobile versions of the test eliminate examiner differences and increase the inter-rater reliability.", style = "font-size:150%")),
-    tags$li(p("The digit sequence shows a superiority effect when compared to any non-digit span, and the Digit Span test is a preferred method to measure one’s cognitive functioning.", style = "font-size:150%")),
+    tags$li(p("The digit sequence shows a superiority effect when compared to any non-digit span, and the Digit Span test is a preferred method to measure oneâs cognitive functioning.", style = "font-size:150%")),
   )
   )
 )
@@ -327,6 +354,11 @@ EntireTestResultsUI <- tabPanelBody(
       column(
         width = 11,
         h1("Test Results", align = "center", style = "font-weight: bold"),
+        fluidRow(
+          infoBoxOutput("NumOfSubjects"),
+          infoBox("Number of Features Recorded", 16, icon = icon("list"), color = "blue", fill = TRUE),
+          downloadButton("download", "Download All Data", style = "width: 30%; font-size: 200%")
+        ),
         h2("Digit Span Score and Factoring Variables", align = "center", style = "font-weight: bold"),
         fluidRow(
           box(
@@ -438,7 +470,7 @@ EntireTestResultsUI <- tabPanelBody(
         ),
         h2("Interpretation", align = "center", style = "font-weight: bold"),
         box(
-          title = "Interpretation", status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE,
+          title = "Interpretation", status = "success", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE,
           tags$div(tags$ul(
             tags$li(p("It is observed that with increase in age digit span decreases.", style = "font-size:150%")),
             tags$li(p("It is observed that with increase in education level digit span increases.", style = "font-size:150%")),
@@ -509,8 +541,23 @@ IntroUI <- tabPanelBody(
 )
 
 
+# ------------------- Detect Mobile
+mobileDetect <- function(inputId, value = 0) {
+  tagList(
+    singleton(tags$head(tags$script(src = "js/mobile.js"))),
+    tags$input(id = inputId,
+               class = "mobile-element",
+               type = "hidden")
+  )
+}
 
-
+modal_mobile <- modalDialog(
+  "The webapp is not optimized for running on smaller screens. Please try using larger screen devices and Landscape Orientation.",
+  title = "You are on Mobile!",
+  footer = tagList(
+    actionButton("mobile", "Continue", class = "btn btn-warning")
+  )
+)
 
 # ------------------------- Test UI
 TestUI <- tabPanelBody(
@@ -519,11 +566,14 @@ TestUI <- tabPanelBody(
     column(width = 1),
     column(
       width = 11,
-      splitLayout(
-        cellWidths = c("60%", "40%"),
-        span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle", align = "center"),
-        DigitPadUI
+      fluidPage(
+        splitLayout(
+          cellWidths = c("50%", "50%"),
+          span(textOutput("display_digit"), style = "font-size:2000%; text-align: center; vertical-align: middle", align = "center"),
+          DigitPadUI
+        )
       )
+      
     )
   )
 )
@@ -531,48 +581,48 @@ TestUI <- tabPanelBody(
 # ------------------------ Results UI
 ResultUI <- tabPanelBody(
   value = "perfPanel",
-    useShinydashboard(),
-    tags$head(tags$style(HTML('.info-box {min-height: 60px;} .info-box-icon {height: 60px; line-height: 60px;} .info-box-content {padding-top: 0px; padding-bottom: 0px;}'))),
-    fluidRow(
-      h1(textOutput("ResultHead"), align = "center", style = "font-weight: bold")
-    ),
-    fluidRow(
-      column(width = 1),
-      column(
-        width = 11,
-        fluidRow(
-          valueBoxOutput("DSPScore", width = 3),
-          valueBoxOutput("TotalTime", width = 3),
-          # bsTooltip(""),
-          valueBoxOutput("TotalMistakes", width = 3),
-          valueBoxOutput("TotalRestarts", width = 3)
+  useShinydashboard(),
+  tags$head(tags$style(HTML('.info-box {min-height: 60px;} .info-box-icon {height: 60px; line-height: 60px;} .info-box-content {padding-top: 0px; padding-bottom: 0px;}'))),
+  fluidRow(
+    h1(textOutput("ResultHead"), align = "center", style = "font-weight: bold")
+  ),
+  fluidRow(
+    column(width = 1),
+    column(
+      width = 11,
+      fluidRow(
+        valueBoxOutput("DSPScore", width = 3),
+        valueBoxOutput("TotalTime", width = 3),
+        # bsTooltip(""),
+        valueBoxOutput("TotalMistakes", width = 3),
+        valueBoxOutput("TotalRestarts", width = 3)
+      ),
+      fluidRow(
+        column(
+          width = 6,
+          uiOutput("roundwisedata"),
+          box(
+            title = "Average Click Time in Each Round", status = "primary", solidHeader = TRUE, width = 12,
+            plotOutput("time_each_round")
+          )
         ),
-        fluidRow(
-          column(
-            width = 6,
-            uiOutput("roundwisedata"),
-            box(
-              title = "Average Click Time in Each Round", status = "primary", solidHeader = TRUE, width = 12,
-              plotOutput("time_each_round")
-            )
+        column(
+          width = 6,
+          box(
+            title = "Click Times in Selected Round", status = "primary", solidHeader = TRUE, width = 12,
+            plotOutput("time_this_round")
           ),
-          column(
-            width = 6,
-            box(
-              title = "Click Times in Selected Round", status = "primary", solidHeader = TRUE, width = 12,
-              plotOutput("time_this_round")
-            ),
-            box(
-              title = "Your Position Insight", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
-              infoBoxOutput("DSPRank", width = 6),
-              infoBoxOutput("NumCompetitors", width = 6),
-              infoBoxOutput("MeanTimeRankWithSameDSPRank", width = 6),
-              infoBoxOutput("TotTimeRankWithSameDSPRank", width = 6)
-            )
+          box(
+            title = "Your Position Insight", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+            infoBoxOutput("DSPRank", width = 6),
+            infoBoxOutput("NumCompetitors", width = 6),
+            infoBoxOutput("MeanTimeRankWithSameDSPRank", width = 6),
+            infoBoxOutput("TotTimeRankWithSameDSPRank", width = 6)
           )
         )
       )
     )
+  )
 )
 
 modal_performance_tab <- modalDialog(
@@ -590,19 +640,20 @@ ui <- dashboardPage(
     title = "DIGIT SPAN TEST", titleWidth = "15%",
     tags$li(
       class = "dropdown",
-          actionButton("theory", "Concepts & Background"),
-          bsTooltip("theory", "Gives Detailed information about the Digit Span Test and Memory Model."),
-          actionButton("entireTestRes", "Results and Findings"),
-          bsTooltip("entireTestRes", "Gives Visualization and Interpretation about already collected data."),
-          actionButton("home", "Home"),
-          bsTooltip("home", "Goes to Home Screen where all the rules are listed")
-      )
-    ),
+      actionButton("theory", "Concepts & Background"),
+      bsTooltip("theory", "Gives Detailed information about the Digit Span Test and Memory Model."),
+      actionButton("entireTestRes", "Results and Findings"),
+      bsTooltip("entireTestRes", "Gives Visualization and Interpretation about already collected data."),
+      actionButton("home", "Home"),
+      bsTooltip("home", "Goes to Home Screen where all the rules are listed")
+    )
+  ),
   dashboardSidebar(
     tags$style(HTML(".main-sidebar{width: 15%;}")),
     UserDataUI
   ),
   dashboardBody(
+    mobileDetect('isMobile'),
     use_waiter(),
     use_waitress(),
     tabsetPanel(
@@ -623,10 +674,18 @@ ui <- dashboardPage(
 #-------------------------------------------------- Main Server
 server <- function(input, output, session) {
   
-  showNotification("Concepts & Background Button provides preliminary information for this test and memory model.", duration = NULL, type = "message")
-  showNotification("Results and Findings Button provides insight to already collected data.", duration = NULL, type = "message")
-  showNotification("Home brings you back to the starting page with all the rules.", duration = NULL, type = "message")
+  showNotification("Kindly keep an eye on notifications..", duration = NULL, type = "message")
   
+  # ------------ Deals with Mobile
+  observe({
+    if (input$isMobile) {
+      showModal(modal_mobile)
+    }
+  })
+  
+  observeEvent(input$mobile, {
+    removeModal()
+  })
   #------------- Deals with Theory
   observeEvent(input$theory, {
     if (input$main != "testPanel") {
@@ -643,10 +702,25 @@ server <- function(input, output, session) {
   
   #------------- Deals with Entire Test Results Screen
   EntireTestResultsSetup <- function() {
-    user_data_temp <- read_csv("user_data.csv")
-    user_dig_seq_temp <- read_csv("user_dig_seq.csv")
-    user_restart_wrong_temp <- read_csv("user_restart_wrong.csv")
-    user_digit_click_time_temp <- read_csv("user_digit_click_time.csv")
+    user_data_temp <- read_sheet(user_data_id, sheet = "main")
+    user_dig_seq_temp <- read_sheet(user_dig_seq_id, sheet = "main")
+    user_restart_wrong_temp <- read_sheet(user_restart_wrong_id, sheet = "main")
+    user_digit_click_time_temp <- read_sheet(user_digit_click_time_id, sheet = "main")
+    
+    sym_diff <- function(a,b) setdiff(union(a,b), intersect(a,b))
+    
+    user_data_temp <- user_data_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_dig_seq_temp <- user_dig_seq_temp %>%
+      filter(!(ID %in% setdiff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_restart_wrong_temp <- user_restart_wrong_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_restart_wrong_temp$ID)))
+    user_digit_click_time_temp <- user_digit_click_time_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_digit_click_time_temp$ID)))
+    
+    output$NumOfSubjects <- renderInfoBox({
+      infoBox("Number of Subjects", nrow(user_data_temp), icon = icon("users"), fill = TRUE, color = "teal")
+    })
     
     digit_span_per_ID <- user_dig_seq_temp %>%
       group_by(ID) %>%
@@ -1137,9 +1211,23 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$entireTestRes, {
+    
     if (input$main != "testPanel") {
+      
+      waiter <- Waiter$new(
+        html = tagList(
+          spin_fading_circles(),
+          "Loading Data... Generating Plots..."
+        )
+      )
+      waiter$show()
+      on.exit(waiter$hide())
+      if (filled_once()) {
+        showNotification("Your Data is also added and used to generate plots.", type = "message")
+      }
+      
       updateTabsetPanel(inputId = "main", selected = "entireTestPanel")
-      if(file.exists("user_data.csv")){
+      if(nrow(read_sheet(user_data_id, sheet = "main")) != 0){
         EntireTestResultsSetup()
       } else {
         showModal(modal_entiretest_tab)
@@ -1162,7 +1250,10 @@ server <- function(input, output, session) {
   curr_user <- reactiveVal(curr_user_data)
   
   observeEvent(input$start, {
-    if (filled_once()) { return() }
+    if (filled_once()) {
+      updateTabsetPanel(inputId = "main", selected = "perfPanel")
+      return()
+    }
     
     if (((!is.integer(input$age)) | (input$age < 0)) | (input$age > 100)) {
       
@@ -1204,13 +1295,14 @@ server <- function(input, output, session) {
     
     last_ID <<- 0
     append_to_prev <<- FALSE
-    if (file.exists("user_data.csv")) {
-      temp <- read_csv("user_data.csv")
+    temp1 <- read_sheet(user_data_id, sheet = "main")
+    if (nrow(temp1) != 0) {
+      temp <- temp1
       last_ID <<- temp$ID[length(temp$ID)]
       append_to_prev <<- TRUE
     }
     
-    curr_user(tibble(ID = last_ID+1, age = input$age, sex = input$sex, educat = input$educat, job = input$job, academic = input$academic, maths = input$maths, music = input$music, env = input$env))
+    curr_user(tibble(ID = last_ID+1, age = as.numeric(input$age), sex = as.numeric(input$sex), educat = as.numeric(input$educat), job = as.numeric(input$job), academic = as.numeric(input$academic), maths = as.numeric(input$maths), music = as.numeric(input$music), env = as.numeric(input$env)))
     filled_once(TRUE)
   })
   
@@ -1432,9 +1524,18 @@ server <- function(input, output, session) {
         ) 
     }, res = 96)
     
-    user_data_temp <- read_csv("user_data.csv")
-    user_dig_seq_temp <- read_csv("user_dig_seq.csv")
-    user_digit_click_time_temp <- read_csv("user_digit_click_time.csv")
+    user_data_temp <- read_sheet(user_data_id, sheet = "main")
+    user_dig_seq_temp <- read_sheet(user_dig_seq_id, sheet = "main")
+    user_digit_click_time_temp <- read_sheet(user_digit_click_time_id, sheet = "main")
+    
+    sym_diff <- function(a,b) setdiff(union(a,b), intersect(a,b))
+    
+    user_data_temp <- user_data_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_dig_seq_temp <- user_dig_seq_temp %>%
+      filter(!(ID %in% setdiff(user_data_temp$ID, user_dig_seq_temp$ID)))
+    user_digit_click_time_temp <- user_digit_click_time_temp %>%
+      filter(!(ID %in% sym_diff(user_data_temp$ID, user_digit_click_time_temp$ID)))
     
     # Calculating DSP Ranking 
     digit_span_per_ID <- user_dig_seq_temp %>%
@@ -1533,6 +1634,8 @@ server <- function(input, output, session) {
     })
     
   }
+
+  freezeReactiveValue(input, "tabrounds")
   
   output$time_this_round <- renderPlot({
     time_per_round<- user_digit_click_time() %>%
@@ -1573,7 +1676,7 @@ server <- function(input, output, session) {
       if (no_of_digs() > 2){
         write_restart(restart_times())
       }
-      showNotification("One restart used, No more restarts available in this round", type = "message")
+      showNotification("One restart used, No more restarts available in this round.", type = "warning")
     } else{
       if ((wrong_times() <= 1) & (restart_times() == 1)){
         showNotification("Only one restart per round is allowed!", type = "error")
@@ -1583,12 +1686,58 @@ server <- function(input, output, session) {
     }
   })
   
+  # ------ Taking too long to make a guess
+  #observe({
+  #  curr_time <- Sys.time()
+  #  lapsed_time <- as.numeric(difftime(curr_time, prev_hit_time(), units = "secs"))
+  #  print(lapsed_time)
+  #  if ((lapsed_time > 5) & (disp_dig() == "GO")) {
+  #    showNotification("Taking too long... Click any digit to move on...")
+  #  }
+  #})
+  
+  # ------ Handling Modal after on Test Completion
   observeEvent(input$performance, {
+    waiter <- Waiter$new(
+      html = tagList(
+        spin_fading_circles(),
+        "Loading your performance...."
+      )
+    )
+    waiter$show()
+    on.exit(waiter$hide())
+    
+    output$start_ok <- renderText("")
+    updateActionButton(inputId = "start", label = "Your Performance")
     updateTabsetPanel(inputId = "main", selected = "perfPanel")
     performancePanelSetup()
     removeModal()
     
   })
+  
+  # ---- Download Data
+  output$download <- downloadHandler(
+    filename = "DSPData.zip",
+    content = function(fname) {
+      fs <- c()
+      tmpdir <- tempdir()
+      setwd(tempdir())
+      fs <- c("user_data.csv", "user_dig_seq.csv", "user_restart_wrong.csv", "user_digit_click_time.csv")
+      withProgress(message = "Files getting ready for download", detail = "Zipping .csv files...", {
+        write_csv(read_sheet(user_data_id, sheet = "main"), file = "user_data.csv")
+        incProgress(1 / 4)
+        write_csv(read_sheet(user_dig_seq_id, sheet = "main"), file = "user_dig_seq.csv")
+        incProgress(1 / 4)
+        write_csv(read_sheet(user_restart_wrong_id, sheet = "main"), file = "user_restart_wrong.csv")
+        incProgress(1 / 4)
+        write_csv(read_sheet(user_digit_click_time_id, sheet = "main"), file = "user_digit_click_time.csv")
+        incProgress(1 / 4)
+      })
+      
+      zip(zipfile=fname, files=fs)
+    },
+    contentType = "application/zip"
+  )
   
   #--- Handling User DigitPad Input after showing a Number
   check_dig_inp <- function(id, val) {
@@ -1632,65 +1781,93 @@ server <- function(input, output, session) {
               wrong_times(wrong_times() + 1)
               if (wrong_times() <= 1) {
                 wrong_input(id)
-                showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "message")
+                showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "warning")
               } else {
                 wrong_input(id, FALSE)
                 
                 showModal(modal_performance_tab)
                 
-                # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
-                write_csv(curr_user(), "user_data.csv", append = append_to_prev)
+                withProgress(message = "Adding your data to database...", {
+                  # formatting the data lil bit before storing for less space usage and add ID to recognize particular user across all files
+                  if (append_to_prev) {
+                    sheet_append(data = curr_user(), ss = user_data_id, sheet = "main")
+                  } else {
+                    sheet_write(data = curr_user(), ss = user_data_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_dig_seq()
+                  temp <- temp %>%
+                    add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
+                    select(ID, everything()) %>%
+                    gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
+                    add_column(mis_ind = index_wrong) %>%
+                    filter(dig_seq != "") %>%
+                    arrange(parse_number(rounds), try)
+                  
+                  user_dig_seq(temp)
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp, ss = user_dig_seq_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp, ss = user_dig_seq_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_restart_wrong()
+                  temp <- temp %>%
+                    add_column(ID = c(last_ID+1, last_ID+1)) %>%
+                    select(ID, everything()) %>%
+                    gather(paste0("r", 1:100), key = "rounds", value = "n_times")
+                  
+                  tot_wrongs <- temp %>%
+                    filter(variable == "n_wrongs") %>%
+                    summarise(tot_wrongs = sum(n_times))
+                  net_mistakes((tot_wrongs$tot_wrongs)[1])
+                  
+                  tot_restarts <- temp %>%
+                    filter(variable == "n_restarts") %>%
+                    summarise(tot_restarts = sum(n_times))
+                  net_restarts((tot_restarts$tot_restarts)[1])
+                  
+                  user_restart_wrong(temp[1:(2*(no_of_digs()-2)),])
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp[1:(2*(no_of_digs()-2)),], ss = user_restart_wrong_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                  
+                  temp <- user_digit_click_time()
+                  temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
+                    add_column(ID = (last_ID+1)) %>%
+                    select(ID, rounds, everything()) %>%
+                    gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
+                    arrange(parse_number(rounds), try) %>%
+                    filter(time_diff != -1)
+                  net_time <- temp %>%
+                    mutate(rounds = parse_number(rounds)) %>%
+                    filter(rounds != no_of_digs()) %>%
+                    summarise(tot_time = sum(time_diff))
+                  net_time <- (net_time$tot_time)[1]
+                  net_tot_time(net_time)
+                  
+                  user_digit_click_time(temp)
+                  
+                  if (append_to_prev) {
+                    sheet_append(data = temp, ss = user_digit_click_time_id, sheet = "main")
+                  } else {
+                    sheet_write(data = temp, ss = user_digit_click_time_id, sheet = "main")
+                  }
+                  
+                  incProgress(1/4)
+                })
                 
-                temp <- user_dig_seq()
-                temp <- temp %>%
-                  add_column(ID = c(last_ID+1, last_ID+1, last_ID+1)) %>%
-                  select(ID, everything()) %>%
-                  gather(paste0("r", 1:100), key = "rounds", value = "dig_seq") %>%
-                  add_column(mis_ind = index_wrong) %>%
-                  filter(dig_seq != "") %>%
-                  arrange(parse_number(rounds), try)
                 
-                user_dig_seq(temp)
-                
-                write_csv(temp, "user_dig_seq.csv", append = append_to_prev)
-                
-                temp <- user_restart_wrong()
-                temp <- temp %>%
-                  add_column(ID = c(last_ID+1, last_ID+1)) %>%
-                  select(ID, everything()) %>%
-                  gather(paste0("r", 1:100), key = "rounds", value = "n_times")
-                
-                tot_wrongs <- temp %>%
-                  filter(variable == "n_wrongs") %>%
-                  summarise(tot_wrongs = sum(n_times))
-                net_mistakes((tot_wrongs$tot_wrongs)[1])
-                
-                tot_restarts <- temp %>%
-                  filter(variable == "n_restarts") %>%
-                  summarise(tot_restarts = sum(n_times))
-                net_restarts((tot_restarts$tot_restarts)[1])
-                
-                user_restart_wrong(temp[1:(2*(no_of_digs()-2)),])
-                
-                write_csv(temp[1:(2*(no_of_digs()-2)),], "user_restart_wrong.csv", append = append_to_prev)
-                
-                temp <- user_digit_click_time()
-                temp <- temp[1:(3*(no_of_digs()-2)), 1:(3*(no_of_digs()-2) + 2)] %>%
-                  add_column(ID = (last_ID+1)) %>%
-                  select(ID, rounds, everything()) %>%
-                  gather(paste0("c", 1:(3*(no_of_digs()-2))), key = "clicks", value = "time_diff") %>%
-                  arrange(parse_number(rounds), try) %>%
-                  filter(time_diff != -1)
-                net_time <- temp %>%
-                  mutate(rounds = parse_number(rounds)) %>%
-                  filter(rounds != no_of_digs()) %>%
-                  summarise(tot_time = sum(time_diff))
-                net_time <- (net_time$tot_time)[1]
-                net_tot_time(net_time)
-                
-                user_digit_click_time(temp)
-                
-                write_csv(temp, "user_digit_click_time.csv", append = append_to_prev)
               }
             }
           }
