@@ -19,9 +19,8 @@ options(
   gargle_oauth_cache = "DIGIT SPAN/.secrets"
 )
 
-# ------------- Uncomment the follow few lines to authenticate your google account and create the required google sheets file on your drive
-#drive_auth()
-#gs4_auth()
+drive_auth()
+gs4_auth()
 
 # -------------- Creating GoogleSheets
 #gs4_create(name = "user_data", sheets = "main")
@@ -1635,6 +1634,8 @@ server <- function(input, output, session) {
     })
     
   }
+
+  freezeReactiveValue(input, "tabrounds")
   
   output$time_this_round <- renderPlot({
     time_per_round<- user_digit_click_time() %>%
@@ -1675,7 +1676,7 @@ server <- function(input, output, session) {
       if (no_of_digs() > 2){
         write_restart(restart_times())
       }
-      showNotification("One restart used, No more restarts available in this round", type = "message")
+      showNotification("One restart used, No more restarts available in this round.", type = "warning")
     } else{
       if ((wrong_times() <= 1) & (restart_times() == 1)){
         showNotification("Only one restart per round is allowed!", type = "error")
@@ -1684,6 +1685,16 @@ server <- function(input, output, session) {
       }
     }
   })
+  
+  # ------ Taking too long to make a guess
+  #observe({
+  #  curr_time <- Sys.time()
+  #  lapsed_time <- as.numeric(difftime(curr_time, prev_hit_time(), units = "secs"))
+  #  print(lapsed_time)
+  #  if ((lapsed_time > 5) & (disp_dig() == "GO")) {
+  #    showNotification("Taking too long... Click any digit to move on...")
+  #  }
+  #})
   
   # ------ Handling Modal after on Test Completion
   observeEvent(input$performance, {
@@ -1770,7 +1781,7 @@ server <- function(input, output, session) {
               wrong_times(wrong_times() + 1)
               if (wrong_times() <= 1) {
                 wrong_input(id)
-                showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "message")
+                showNotification("One Mistake Committed, No more chances for Mistake is available in this round", type = "warning")
               } else {
                 wrong_input(id, FALSE)
                 
