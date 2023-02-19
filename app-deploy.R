@@ -11,6 +11,8 @@ library(viridis)
 library(googledrive)
 library(googlesheets4)
 
+#----------------------------------------------------- SETTING UP
+
 #----------------------------------------------------- Google Sheets 
 options(
   # whenever there is one account token found, use the cached token
@@ -22,11 +24,13 @@ options(
 drive_auth()
 gs4_auth()
 
-# -------------- Creating GoogleSheets
+# -------------- Creating GoogleSheets (Uncomment this section for the first time when these google sheets are not present to create them then comment it)
 #gs4_create(name = "user_data", sheets = "main")
 #gs4_create(name = "user_dig_seq", sheets = "main")
 #gs4_create(name = "user_digit_click_time", sheets = "main")
 #gs4_create(name = "user_restart_wrong", sheets = "main")
+
+#----------------------------------------------------- END OF SETUP
 
 # -------------- Get IDs
 user_data_id <- drive_get("user_data")$id
